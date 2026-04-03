@@ -1,0 +1,13 @@
+{
+  "name": "flora-journal",
+  "version": "1.0.0",
+  "description": "A naturalist's field journal — locally hosted",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^2.0.0"
+  }
+}

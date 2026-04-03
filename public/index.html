@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flora Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --paper: #f5f0e8; --paper-card: #fffef9; --ink: #2a2416;
+  --ink-soft: #3d3526; --ink-muted: #7a6e5c; --ink-faint: #9a8c74;
+  --rule: #c9b99a; --rule-light: #e8dcc8;
+  --green: #3b6d11; --green-bg: #eaf3de;
+  --amber: #ba7517; --amber-bg: #faeeda;
+  --red: #c0392b;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--paper); font-family: 'Karla', sans-serif; color: var(--ink-soft); min-height: 100vh; font-size: 16px; }
+
+/* NAV */
+nav { position: sticky; top: 0; z-index: 200; background: var(--paper); border-bottom: 1px solid var(--rule); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+.nav-title { font-family: 'Lora', serif; font-size: 19px; font-weight: 400; color: var(--ink); }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.nav-count { font-size: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+.btn-primary { background: var(--ink); color: var(--paper); border: none; border-radius: 3px; font-family: 'Karla', sans-serif; font-size: 14px; padding: 8px 18px; cursor: pointer; transition: opacity 0.15s; }
+.btn-primary:hover { opacity: 0.8; }
+.btn-icon-nav { width: 36px; height: 36px; border-radius: 3px; border: 0.5px solid var(--rule); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ink-muted); transition: background 0.12s; }
+.btn-icon-nav:hover, .btn-icon-nav.active { background: var(--rule-light); color: var(--ink); }
+
+/* SEARCH */
+.search-bar { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; overflow: hidden; max-height: 0; transition: max-height 0.25s ease, padding 0.25s ease; }
+.search-bar.open { max-height: 80px; padding: 1rem 1.5rem 0; }
+.search-wrap { position: relative; }
+.search-input { width: 100%; background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 3px; font-family: 'Karla', sans-serif; font-size: 15px; color: var(--ink-soft); padding: 10px 40px 10px 14px; outline: none; transition: border-color 0.15s; }
+.search-input:focus { border-color: var(--ink-muted); }
+.search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--ink-faint); font-size: 16px; }
+
+/* FILTERS */
+.filter-bar { max-width: 760px; margin: 0 auto; padding: 1.25rem 1.5rem 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filter-select { background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 3px; font-family: 'Karla', sans-serif; font-size: 13px; color: var(--ink-soft); padding: 7px 28px 7px 11px; cursor: pointer; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239a8c74'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 9px center; transition: border-color 0.12s; }
+.filter-select:focus { border-color: var(--ink-muted); }
+.filter-select.active { border-color: var(--amber); color: var(--amber); background-color: var(--amber-bg); }
+.filter-clear { font-size: 13px; color: var(--ink-faint); background: none; border: none; cursor: pointer; padding: 4px 6px; }
+.filter-results { font-size: 13px; color: var(--ink-faint); margin-left: auto; }
+
+main { max-width: 760px; margin: 0 auto; padding: 1.75rem 1.5rem 5rem; }
+.entries { display: flex; flex-direction: column; gap: 3rem; }
+
+/* ENTRY CARD */
+.entry { background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 4px; overflow: hidden; position: relative; animation: fadeUp 0.3s ease both; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.tape { position: absolute; background: rgba(220,200,160,0.5); border: 0.5px solid rgba(180,155,100,0.3); border-radius: 1px; pointer-events: none; z-index: 2; }
+
+.entry-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 1.4rem 1.4rem 0; margin-bottom: 1rem; gap: 1rem; }
+.entry-meta { display: flex; flex-direction: column; gap: 6px; }
+.entry-date { font-size: 12px; color: var(--ink-faint); letter-spacing: 0.8px; text-transform: uppercase; }
+.entry-location { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--amber); background: var(--amber-bg); padding: 4px 10px; border-radius: 2px; width: fit-content; }
+.loc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); flex-shrink: 0; }
+.entry-actions { display: flex; gap: 6px; }
+.btn-icon { width: 30px; height: 30px; border-radius: 3px; border: 0.5px solid var(--rule); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ink-muted); font-size: 13px; transition: background 0.12s; }
+.btn-icon:hover { background: var(--rule-light); }
+
+/* OUTING FIELD NOTE */
+.outing-note { font-family: 'Lora', serif; font-style: italic; font-size: 16px; color: var(--ink-soft); line-height: 1.75; padding: 0 1.4rem 1rem; }
+
+/* ENTRY-LEVEL PHOTO STRIP */
+.entry-photo-strip { padding: 0 1.4rem 1.2rem; }
+.photo-strip-label { font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+.photo-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
+.photo-strip::-webkit-scrollbar { height: 4px; }
+.photo-strip::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 2px; }
+.strip-thumb { width: 140px; height: 100px; flex-shrink: 0; object-fit: cover; border-radius: 3px; border: 0.5px solid var(--rule); cursor: pointer; transition: transform 0.2s; }
+.strip-thumb:hover { transform: scale(1.03); }
+
+/* SPECIMENS */
+.specimens-list { display: flex; flex-direction: column; }
+.specimen { display: grid; grid-template-columns: 300px 1fr; border-top: 0.5px solid var(--rule-light); }
+.specimen:nth-child(even) { direction: rtl; }
+.specimen:nth-child(even) > * { direction: ltr; }
+
+/* SPECIMEN PHOTO GALLERY */
+.spec-gallery { width: 100%; background: var(--rule-light); overflow: hidden; }
+.gallery-main { width: 100%; aspect-ratio: 4/3; overflow: hidden; position: relative; cursor: pointer; }
+.gallery-main img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; display: block; }
+.gallery-main:hover img { transform: scale(1.03); }
+.gallery-main .upload-hint { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 100%; color: var(--ink-faint); font-size: 13px; text-align: center; padding: 1rem; }
+.gallery-main .upload-hint svg { opacity: 0.35; }
+.gallery-thumbs { display: flex; gap: 3px; padding: 3px; background: var(--rule-light); overflow-x: auto; scrollbar-width: none; }
+.gallery-thumbs::-webkit-scrollbar { display: none; }
+.g-thumb { width: 52px; height: 40px; object-fit: cover; border-radius: 2px; cursor: pointer; opacity: 0.7; transition: opacity 0.15s; flex-shrink: 0; border: 1.5px solid transparent; }
+.g-thumb:hover { opacity: 1; }
+.g-thumb.active { opacity: 1; border-color: var(--ink); }
+.g-add-btn { width: 52px; height: 40px; flex-shrink: 0; background: rgba(0,0,0,0.07); border: 1px dashed var(--rule); border-radius: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ink-faint); font-size: 18px; line-height: 1; transition: background 0.12s; }
+.g-add-btn:hover { background: rgba(0,0,0,0.13); }
+
+.spec-text { padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; }
+.spec-name { font-family: 'Lora', serif; font-size: 20px; font-weight: 400; color: var(--ink); margin-bottom: 3px; line-height: 1.2; }
+.spec-latin { font-family: 'Lora', serif; font-size: 14px; font-style: italic; color: var(--ink-muted); margin-bottom: 12px; }
+.spec-note { font-size: 15px; color: var(--ink-soft); line-height: 1.8; }
+.spec-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.spec-tag { font-size: 12px; color: var(--green); background: var(--green-bg); padding: 4px 10px; border-radius: 2px; }
+mark { background: #fef3c7; color: inherit; border-radius: 2px; padding: 0 1px; }
+
+/* LIGHTBOX */
+.lightbox { display: none; position: fixed; inset: 0; z-index: 900; background: rgba(20,16,10,0.92); align-items: center; justify-content: center; }
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 92vw; max-height: 88vh; object-fit: contain; border-radius: 3px; }
+.lb-close { position: absolute; top: 1.25rem; right: 1.5rem; background: none; border: none; color: rgba(255,255,255,0.7); font-size: 28px; cursor: pointer; line-height: 1; }
+.lb-close:hover { color: #fff; }
+.lb-prev, .lb-next { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.8); font-size: 22px; cursor: pointer; padding: 12px 16px; border-radius: 3px; transition: background 0.15s; }
+.lb-prev:hover, .lb-next:hover { background: rgba(255,255,255,0.2); }
+.lb-prev { left: 1rem; }
+.lb-next { right: 1rem; }
+.lb-caption { position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.6); font-size: 14px; font-family: 'Lora', serif; font-style: italic; }
+
+/* PAGINATION */
+.pagination { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 3rem; padding-top: 1.75rem; border-top: 1px dashed var(--rule); flex-wrap: wrap; }
+.page-btn { min-width: 34px; height: 34px; border-radius: 3px; border: 0.5px solid var(--rule); background: transparent; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 14px; color: var(--ink-muted); transition: all 0.12s; padding: 0 8px; }
+.page-btn:hover:not(:disabled) { background: var(--rule-light); }
+.page-btn.current { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.page-btn:disabled { opacity: 0.3; cursor: default; }
+.page-info { font-size: 13px; color: var(--ink-faint); padding: 0 4px; }
+
+.empty-state { text-align: center; padding: 5rem 1rem; color: var(--ink-faint); }
+.empty-state p { font-family: 'Lora', serif; font-style: italic; font-size: 18px; margin-bottom: 1.25rem; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--paper); padding: 10px 20px; border-radius: 4px; font-size: 14px; opacity: 0; transition: all 0.2s; pointer-events: none; z-index: 999; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* MODAL */
+.modal-bg { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(42,36,22,0.52); align-items: flex-start; justify-content: center; padding: 1.5rem 1rem; overflow-y: auto; }
+.modal-bg.open { display: flex; }
+.modal { background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 6px; width: 100%; max-width: 620px; padding: 2rem; animation: slideUp 0.2s ease; margin: auto; }
+@keyframes slideUp { from { transform:translateY(14px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; }
+.modal-title { font-family: 'Lora', serif; font-size: 20px; font-weight: 400; color: var(--ink); }
+.draft-status { font-size: 12px; color: var(--ink-faint); font-style: italic; }
+.form-row { margin-bottom: 1.2rem; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.2rem; }
+.form-label { display: block; font-size: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 7px; }
+input[type=text], input[type=date], textarea { width: 100%; background: var(--paper); border: 0.5px solid var(--rule); border-radius: 3px; font-family: 'Karla', sans-serif; font-size: 15px; color: var(--ink-soft); padding: 10px 12px; outline: none; transition: border-color 0.15s; resize: vertical; }
+input:focus, textarea:focus { border-color: var(--ink-muted); }
+textarea { min-height: 80px; line-height: 1.7; }
+
+/* PHOTO PICKER (used in both entry and sighting forms) */
+.photo-picker { border: 0.5px solid var(--rule); border-radius: 3px; overflow: hidden; }
+.photo-picker-thumbs { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; min-height: 0; }
+.photo-picker-thumbs:empty { display: none; }
+.pp-thumb-wrap { position: relative; width: 80px; height: 60px; }
+.pp-thumb { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; display: block; }
+.pp-remove { position: absolute; top: -5px; right: -5px; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--paper); border: none; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; line-height: 1; }
+.pp-remove:hover { background: var(--red); }
+.photo-picker-add { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-top: 0.5px solid var(--rule-light); cursor: pointer; color: var(--ink-muted); font-size: 13px; background: transparent; width: 100%; border-left: none; border-right: none; border-bottom: none; font-family: 'Karla', sans-serif; transition: background 0.12s; position: relative; }
+.photo-picker-add:hover { background: var(--rule-light); }
+.photo-picker-add input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.pp-spinner { font-size: 12px; color: var(--ink-faint); padding: 6px 12px; display: none; }
+.pp-spinner.visible { display: block; }
+
+.specimen-form { background: var(--paper); border: 0.5px solid var(--rule); border-radius: 3px; padding: 1.25rem; margin-bottom: 12px; position: relative; }
+.specimen-form-num { font-size: 12px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 14px; }
+.btn-remove-spec { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 16px; }
+.btn-remove-spec:hover { color: var(--red); }
+.btn-add-spec { width: 100%; padding: 10px; border: 1px dashed var(--rule); background: transparent; border-radius: 3px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 14px; color: var(--ink-muted); margin-bottom: 1.5rem; transition: background 0.12s; }
+.btn-add-spec:hover { background: var(--rule-light); }
+.modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.75rem; padding-top: 1.25rem; border-top: 0.5px solid var(--rule-light); }
+.btn-cancel { padding: 9px 20px; border: 0.5px solid var(--rule); background: transparent; border-radius: 3px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 14px; color: var(--ink-muted); }
+.btn-cancel:hover { background: var(--rule-light); }
+.btn-save { padding: 9px 24px; background: var(--ink); color: var(--paper); border: none; border-radius: 3px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 14px; transition: opacity 0.15s; }
+.btn-save:hover { opacity: 0.8; }
+.btn-save:disabled { opacity: 0.4; cursor: default; }
+.btn-discard { padding: 9px 16px; border: none; background: transparent; border-radius: 3px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 13px; color: var(--ink-faint); margin-right: auto; }
+.btn-discard:hover { color: var(--red); }
+.draft-banner { background: var(--amber-bg); border: 0.5px solid var(--rule); border-radius: 3px; padding: 10px 14px; margin-bottom: 1.2rem; display: none; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--amber); }
+.draft-banner.visible { display: flex; }
+.draft-resume { background: none; border: 0.5px solid var(--amber); border-radius: 2px; padding: 4px 12px; font-family: 'Karla', sans-serif; font-size: 13px; color: var(--amber); cursor: pointer; }
+.draft-resume:hover { background: var(--amber); color: var(--paper); }
+
+@media (max-width: 580px) {
+  .specimen { grid-template-columns: 1fr; }
+  .specimen:nth-child(even) { direction: ltr; }
+  nav { padding: 0 1rem; }
+  .filter-bar, .search-bar, main { padding-left: 1rem; padding-right: 1rem; }
+  .form-row-2 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-title">Flora Journal</div>
+  <div class="nav-right">
+    <span class="nav-count" id="entry-count">—</span>
+    <button class="btn-icon-nav" id="search-toggle" title="Search" onclick="toggleSearch()">
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M13 13l3 3"/></svg>
+    </button>
+    <button class="btn-primary" onclick="openModal(null)">+ New entry</button>
+  </div>
+</nav>
+
+<div class="search-bar" id="search-bar">
+  <div class="search-wrap">
+    <input type="text" class="search-input" id="search-input" placeholder="Search plants, notes, locations, tags…" oninput="onSearch()" autocomplete="off">
+    <button class="search-clear" onclick="clearSearch()">✕</button>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <select class="filter-select" id="filter-place" onchange="applyFilters()"><option value="">All places</option></select>
+  <select class="filter-select" id="filter-month" onchange="applyFilters()"><option value="">All dates</option></select>
+  <button class="filter-clear" id="filter-clear-btn" onclick="clearFilters()" style="display:none">✕ Clear</button>
+  <span class="filter-results" id="filter-results"></span>
+</div>
+
+<div style="max-width:760px;margin:0 auto;padding:0 1.5rem;">
+  <div class="draft-banner" id="draft-banner">
+    <span>You have an unsaved draft.</span>
+    <div style="display:flex;gap:8px;">
+      <button class="draft-resume" onclick="resumeDraft()">Resume draft</button>
+      <button style="background:none;border:none;color:var(--amber);cursor:pointer;font-size:16px;" onclick="discardDraft(true)">✕</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="entries" id="entries-list"><div class="empty-state"><p>Loading your journal…</p></div></div>
+  <div class="pagination" id="pagination"></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <button class="lb-prev" onclick="lbNav(-1);event.stopPropagation()">‹</button>
+  <img id="lb-img" src="" alt="">
+  <button class="lb-next" onclick="lbNav(1);event.stopPropagation()">›</button>
+  <div class="lb-caption" id="lb-caption"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="handleBgClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">New entry</div>
+      <div class="draft-status" id="draft-status"></div>
+    </div>
+    <div class="form-row-2">
+      <div><label class="form-label">Date</label><input type="date" id="f-date" oninput="scheduleDraft()"></div>
+      <div><label class="form-label">Location</label><input type="text" id="f-location" placeholder="e.g. KBR National Park" oninput="scheduleDraft()"></div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Field notes</label>
+      <textarea id="f-outing-note" placeholder="Overall impressions — weather, light, what you noticed…" oninput="scheduleDraft()"></textarea>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Entry photos</label>
+      <div class="photo-picker" id="entry-photo-picker">
+        <div class="photo-picker-thumbs" id="entry-photo-thumbs"></div>
+        <button class="photo-picker-add" onclick="">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="14" height="14" rx="2"/><circle cx="5.5" cy="5.5" r="1.5"/><path d="M15 11l-4-4L5 13"/></svg>
+          Add photos
+          <input type="file" accept="image/*" multiple onchange="handleEntryPhotos(event)">
+        </button>
+        <div class="pp-spinner" id="entry-photo-spinner">Uploading…</div>
+      </div>
+    </div>
+    <div id="specimens-container"></div>
+    <button class="btn-add-spec" onclick="addSpecimenForm(null)">+ Add sighting</button>
+    <div class="modal-footer">
+      <button class="btn-discard" id="btn-discard" onclick="discardDraft(false)" style="display:none">Discard draft</button>
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" id="btn-save" onclick="saveEntry()">Save entry</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PER_PAGE  = 4;
+const DRAFT_KEY = 'flora-draft-v2';
+
+let allEntries = [], filtered = [], currentPage = 1;
+let editingId = null, specimenCount = 0;
+let searchQuery = '', draftTimer = null, searchTimer = null;
+
+// entry-level photos in the form { url, caption }[]
+let entryFormPhotos = [];
+
+/* ── API ── */
+async function api(method, url, body) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts);
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function uploadPhoto(file) {
+  const fd = new FormData(); fd.append('photo', file);
+  const r = await fetch('/api/upload', { method:'POST', body:fd });
+  if (!r.ok) throw new Error('Upload failed');
+  return (await r.json()).url;
+}
+
+/* ── LOAD ── */
+async function load() {
+  await loadFilters();
+  await fetchAndRender();
+  checkDraftBanner();
+}
+async function loadFilters() {
+  const { places, months } = await api('GET', '/api/filters');
+  const pe=document.getElementById('filter-place'), me=document.getElementById('filter-month');
+  const sp=pe.value, sm=me.value;
+  pe.innerHTML='<option value="">All places</option>'+places.map(p=>`<option value="${esc(p)}"${p===sp?' selected':''}>${esc(p)}</option>`).join('');
+  me.innerHTML='<option value="">All dates</option>'+months.map(m=>{
+    const [y,mo]=m.split('-');
+    return `<option value="${m}"${m===sm?' selected':''}>${new Date(+y,+mo-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</option>`;
+  }).join('');
+}
+async function fetchAndRender() {
+  const place=document.getElementById('filter-place').value;
+  const month=document.getElementById('filter-month').value;
+  const params=new URLSearchParams();
+  if(place)  params.set('place',place);
+  if(month)  params.set('month',month);
+  if(searchQuery) params.set('search',searchQuery);
+  allEntries = await api('GET', '/api/entries'+(params.toString()?'?'+params:''));
+  filtered = allEntries;
+  document.getElementById('entry-count').textContent = allEntries.length+(allEntries.length===1?' entry':' entries');
+  const any=place||month||searchQuery;
+  document.getElementById('filter-results').textContent = any ? `${filtered.length} result${filtered.length!==1?'s':''}` : '';
+  document.getElementById('filter-clear-btn').style.display = any?'':'none';
+  document.getElementById('filter-place').classList.toggle('active',!!place);
+  document.getElementById('filter-month').classList.toggle('active',!!month);
+  currentPage=1; renderPage();
+}
+
+/* ── SEARCH / FILTERS ── */
+function onSearch() { clearTimeout(searchTimer); searchTimer=setTimeout(()=>{searchQuery=document.getElementById('search-input').value.trim();fetchAndRender();},300); }
+function clearSearch() { document.getElementById('search-input').value=''; searchQuery=''; fetchAndRender(); }
+function toggleSearch() {
+  const bar=document.getElementById('search-bar'),btn=document.getElementById('search-toggle');
+  const open=bar.classList.toggle('open'); btn.classList.toggle('active',open);
+  if(open) setTimeout(()=>document.getElementById('search-input').focus(),260); else clearSearch();
+}
+function applyFilters() { fetchAndRender(); }
+function clearFilters() { document.getElementById('filter-place').value=''; document.getElementById('filter-month').value=''; fetchAndRender(); }
+
+/* ── RENDER ── */
+function renderPage() {
+  const list=document.getElementById('entries-list');
+  list.innerHTML='';
+  if(!filtered.length){
+    list.innerHTML=`<div class="empty-state"><p>${allEntries.length?'No entries match your search.':'No sightings yet.'}</p>${!allEntries.length?'<button class="btn-primary" onclick="openModal(null)">Record your first sighting</button>':''}</div>`;
+    document.getElementById('pagination').innerHTML=''; return;
+  }
+  const total=Math.ceil(filtered.length/PER_PAGE);
+  if(currentPage>total) currentPage=total;
+  const page=filtered.slice((currentPage-1)*PER_PAGE, currentPage*PER_PAGE);
+  const tapes=['left:22px;transform:rotate(-1.5deg)','right:48px;transform:rotate(2deg)','left:58px;transform:rotate(1deg)','right:28px;transform:rotate(-2deg)'];
+  page.forEach((entry,i)=>{
+    const el=document.createElement('div');
+    el.className='entry'; el.style.animationDelay=(i*0.06)+'s';
+    el.innerHTML=`<div class="tape" style="width:${38+(i*7)%18}px;height:14px;top:-7px;${tapes[i%tapes.length]};"></div>`+entryHTML(entry);
+    list.appendChild(el);
+  });
+  renderPagination(total);
+}
+
+function hi(text,q){
+  if(!q) return esc(text);
+  return esc(text).replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>');
+}
+
+function entryHTML(e) {
+  const ds=e.date?new Date(e.date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'';
+  const header=`<div class="entry-header">
+    <div class="entry-meta">
+      <div class="entry-date">${ds}</div>
+      ${e.location?`<div class="entry-location"><span class="loc-dot"></span>${hi(e.location,searchQuery)}</div>`:''}
+    </div>
+    <div class="entry-actions">
+      <button class="btn-icon" title="Edit" onclick="openModal(${e.id})"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 2l3 3-9 9H2v-3L11 2z"/></svg></button>
+      <button class="btn-icon" title="Delete" onclick="deleteEntry(${e.id})">✕</button>
+    </div>
+  </div>`;
+
+  const note = e.outingNote ? `<div class="outing-note">${hi(e.outingNote,searchQuery)}</div>` : '';
+
+  // Entry-level photo strip
+  let entryPhotosHtml = '';
+  if (e.photos && e.photos.length) {
+    const allUrls = JSON.stringify(e.photos.map(p=>p.url));
+    const thumbs = e.photos.map((p,i)=>`<img class="strip-thumb" src="${esc(p.url)}" onclick="openLightbox(${allUrls},${i})" alt="">`).join('');
+    entryPhotosHtml = `<div class="entry-photo-strip"><div class="photo-strip-label">Field photos</div><div class="photo-strip">${thumbs}</div></div>`;
+  }
+
+  const specs=(e.specimens||[]).map(s=>{
+    const photos=s.photos||[];
+    const allUrls=JSON.stringify(photos.map(p=>p.url));
+    const mainSrc=photos[0]?photos[0].url:null;
+    const mainHtml=mainSrc
+      ? `<img src="${esc(mainSrc)}" id="gm-${e.id}-${s.id}" onclick="openLightbox(${allUrls},0)" alt="${esc(s.name||'')}">` 
+      : `<div class="upload-hint" onclick="addPhotoToSighting(${e.id},${s.id})"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>add photo</div>`;
+    const thumbsHtml=photos.map((p,i)=>`<img class="g-thumb${i===0?' active':''}" src="${esc(p.url)}" onclick="switchGallery(${e.id},${s.id},${i},${allUrls})" alt="">`).join('');
+    const galleryHtml=`<div class="spec-gallery">
+      <div class="gallery-main" id="gallery-main-${e.id}-${s.id}">${mainHtml}</div>
+      <div class="gallery-thumbs" id="gallery-thumbs-${e.id}-${s.id}">
+        ${thumbsHtml}
+        <button class="g-add-btn" onclick="addPhotoToSighting(${e.id},${s.id})" title="Add photo">+</button>
+      </div>
+    </div>`;
+    return `<div class="specimen">
+      ${galleryHtml}
+      <div class="spec-text">
+        <div class="spec-name">${hi(s.name||'',searchQuery)}</div>
+        ${s.latin?`<div class="spec-latin">${hi(s.latin,searchQuery)}</div>`:''}
+        <div class="spec-note">${hi(s.note||'',searchQuery)}</div>
+        ${s.tags&&s.tags.length?`<div class="spec-tags">${s.tags.map(t=>`<span class="spec-tag">${hi(t,searchQuery)}</span>`).join('')}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  return header+note+entryPhotosHtml+`<div class="specimens-list">${specs}</div>`;
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ── INLINE SIGHTING PHOTO ADD (from card) ── */
+function addPhotoToSighting(entryId, sightingId) {
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.multiple=true;
+  inp.onchange=async()=>{
+    if(!inp.files.length) return;
+    toast('Uploading…');
+    try {
+      const entry=await api('GET','/api/entries/'+entryId);
+      const urls=[];
+      for(const file of inp.files) urls.push(await uploadPhoto(file));
+      entry.specimens=entry.specimens.map(s=>{
+        if(s.id!==sightingId) return s;
+        return {...s, photos:[...(s.photos||[]),...urls.map(u=>({url:u,caption:null}))]};
+      });
+      await api('PUT','/api/entries/'+entryId,entry);
+      await fetchAndRender();
+      toast('Photo added');
+    } catch(err){ toast('Upload failed'); }
+  };
+  inp.click();
+}
+
+/* ── GALLERY SWITCHER (read-only view) ── */
+function switchGallery(entryId, sightingId, idx, urlsJson) {
+  const urls=typeof urlsJson==='string'?JSON.parse(urlsJson):urlsJson;
+  const main=document.getElementById('gallery-main-'+entryId+'-'+sightingId);
+  if(!main) return;
+  let img=main.querySelector('img');
+  if(!img){ img=document.createElement('img'); img.alt=''; main.innerHTML=''; main.appendChild(img); }
+  img.src=urls[idx];
+  img.onclick=()=>openLightbox(urls,idx);
+  document.querySelectorAll('#gallery-thumbs-'+entryId+'-'+sightingId+' .g-thumb').forEach((t,i)=>t.classList.toggle('active',i===idx));
+}
+
+/* ── LIGHTBOX ── */
+let lbUrls=[], lbIdx=0;
+function openLightbox(urls, idx) {
+  lbUrls=typeof urls==='string'?JSON.parse(urls):urls;
+  lbIdx=idx;
+  showLb();
+  document.getElementById('lightbox').classList.add('open');
+  document.onkeydown=e=>{if(e.key==='Escape')closeLightbox();if(e.key==='ArrowLeft')lbNav(-1);if(e.key==='ArrowRight')lbNav(1);};
+}
+function showLb(){
+  document.getElementById('lb-img').src=lbUrls[lbIdx];
+  document.getElementById('lb-prev').style.display=lbUrls.length>1?'':'none';
+  document.getElementById('lb-next').style.display=lbUrls.length>1?'':'none';
+}
+function lbNav(d){ lbIdx=(lbIdx+d+lbUrls.length)%lbUrls.length; showLb(); }
+function closeLightbox(e){ if(e&&e.target!==document.getElementById('lightbox')&&e.target!==document.getElementById('lb-img')) return; document.getElementById('lightbox').classList.remove('open'); document.onkeydown=null; }
+
+async function deleteEntry(id){
+  if(!confirm('Remove this entry?')) return;
+  await api('DELETE','/api/entries/'+id);
+  toast('Entry deleted');
+  await loadFilters(); await fetchAndRender();
+}
+
+function renderPagination(total){
+  const pg=document.getElementById('pagination');
+  if(total<=1){pg.innerHTML='';return;}
+  const start=(currentPage-1)*PER_PAGE+1,end=Math.min(currentPage*PER_PAGE,filtered.length);
+  let h=`<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>←</button>`;
+  for(let i=1;i<=total;i++){
+    if(total>7&&i>2&&i<total-1&&Math.abs(i-currentPage)>1){if(i===3||i===total-2)h+=`<span class="page-info">…</span>`;continue;}
+    h+=`<button class="page-btn${i===currentPage?' current':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  h+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>→</button>`;
+  h+=`<span class="page-info">${start}–${end} of ${filtered.length}</span>`;
+  pg.innerHTML=h;
+}
+function goPage(p){currentPage=p;renderPage();window.scrollTo({top:0,behavior:'smooth'});}
+
+/* ── DRAFT ── */
+function scheduleDraft(){ if(editingId) return; clearTimeout(draftTimer); draftTimer=setTimeout(saveDraft,1500); }
+function saveDraft(){
+  const d=collectFormData(); if(!d) return;
+  localStorage.setItem(DRAFT_KEY,JSON.stringify({savedAt:Date.now(),data:d}));
+  document.getElementById('draft-status').textContent='Draft saved '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+function collectFormData(){
+  const date=document.getElementById('f-date')?.value;
+  const location=document.getElementById('f-location')?.value.trim();
+  const outingNote=document.getElementById('f-outing-note')?.value.trim();
+  const forms=document.getElementById('specimens-container')?.querySelectorAll('.specimen-form')||[];
+  const specimens=[];
+  for(const form of forms){
+    const idx=form.id.replace('spec-','');
+    specimens.push({name:document.getElementById('spec-name-'+idx)?.value||'',latin:document.getElementById('spec-latin-'+idx)?.value||'',note:document.getElementById('spec-note-'+idx)?.value||'',tags:document.getElementById('spec-tags-'+idx)?.value||'',photos:form._photos||[]});
+  }
+  if(!date&&!location&&!outingNote&&!entryFormPhotos.length&&!specimens.some(s=>s.name)) return null;
+  return {date,location,outingNote,photos:entryFormPhotos,specimens};
+}
+function checkDraftBanner(){
+  const raw=localStorage.getItem(DRAFT_KEY);
+  if(raw){ try{ const d=JSON.parse(raw); if(d&&d.data) document.getElementById('draft-banner').classList.add('visible'); }catch(e){} }
+}
+function resumeDraft(){ document.getElementById('draft-banner').classList.remove('visible'); openModal(null,true); }
+function discardDraft(bannerOnly){ localStorage.removeItem(DRAFT_KEY); document.getElementById('draft-banner').classList.remove('visible'); if(!bannerOnly) closeModal(); }
+
+/* ── MODAL ── */
+function openModal(id, fromDraft) {
+  editingId=id;
+  entryFormPhotos=[];
+  document.getElementById('entry-photo-thumbs').innerHTML='';
+  document.getElementById('modal-bg').classList.add('open');
+  document.getElementById('modal-title').textContent=id?'Edit entry':'New entry';
+  document.getElementById('draft-status').textContent='';
+  document.getElementById('specimens-container').innerHTML='';
+  specimenCount=0;
+  const db=document.getElementById('btn-discard');
+
+  if(id){
+    db.style.display='none';
+    api('GET','/api/entries/'+id).then(e=>{
+      document.getElementById('f-date').value=e.date||'';
+      document.getElementById('f-location').value=e.location||'';
+      document.getElementById('f-outing-note').value=e.outingNote||'';
+      (e.photos||[]).forEach(p=>addEntryPhotoThumb(p.url));
+      (e.specimens||[]).forEach(s=>addSpecimenForm(s));
+      if(!(e.specimens||[]).length) addSpecimenForm(null);
+    });
+  } else if(fromDraft){
+    db.style.display='';
+    try{
+      const raw=localStorage.getItem(DRAFT_KEY);
+      if(raw){
+        const d=JSON.parse(raw).data;
+        document.getElementById('f-date').value=d.date||'';
+        document.getElementById('f-location').value=d.location||'';
+        document.getElementById('f-outing-note').value=d.outingNote||'';
+        (d.photos||[]).forEach(p=>addEntryPhotoThumb(p.url));
+        (d.specimens||[]).forEach(s=>addSpecimenForm({name:s.name,latin:s.latin,note:s.note,tags:s.tags?s.tags.split(',').map(t=>t.trim()).filter(Boolean):[],photos:s.photos||[]}));
+        if(!(d.specimens||[]).length) addSpecimenForm(null);
+        document.getElementById('draft-status').textContent='Draft from '+new Date(JSON.parse(raw).savedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      }
+    }catch(e){ addSpecimenForm(null); }
+  } else {
+    db.style.display=localStorage.getItem(DRAFT_KEY)?'':'none';
+    document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('f-location').value='';
+    document.getElementById('f-outing-note').value='';
+    addSpecimenForm(null);
+  }
+}
+function closeModal(){ clearTimeout(draftTimer); document.getElementById('modal-bg').classList.remove('open'); editingId=null; }
+function handleBgClick(e){ if(e.target===document.getElementById('modal-bg')) closeModal(); }
+
+/* ── ENTRY-LEVEL PHOTOS ── */
+async function handleEntryPhotos(event) {
+  const files=Array.from(event.target.files); if(!files.length) return;
+  const spinner=document.getElementById('entry-photo-spinner');
+  spinner.classList.add('visible');
+  for(const file of files){
+    try{
+      const url=await uploadPhoto(file);
+      addEntryPhotoThumb(url);
+      scheduleDraft();
+    }catch(e){ toast('Upload failed'); }
+  }
+  spinner.classList.remove('visible');
+  event.target.value='';
+}
+function addEntryPhotoThumb(url){
+  entryFormPhotos.push({url,caption:null});
+  const wrap=document.createElement('div'); wrap.className='pp-thumb-wrap';
+  const img=document.createElement('img'); img.className='pp-thumb'; img.src=url;
+  const rm=document.createElement('button'); rm.className='pp-remove'; rm.textContent='✕';
+  rm.onclick=()=>{ wrap.remove(); entryFormPhotos=entryFormPhotos.filter(p=>p.url!==url); scheduleDraft(); };
+  wrap.appendChild(img); wrap.appendChild(rm);
+  document.getElementById('entry-photo-thumbs').appendChild(wrap);
+}
+
+/* ── SPECIMEN FORM ── */
+function addSpecimenForm(pre){
+  specimenCount++;
+  const idx=specimenCount, div=document.createElement('div');
+  div.className='specimen-form'; div.id='spec-'+idx;
+  div._photos=pre&&pre.photos?[...pre.photos]:[];
+  const tagsVal=pre&&pre.tags?(Array.isArray(pre.tags)?pre.tags.join(', '):pre.tags):'';
+  div.innerHTML=`
+    <div class="specimen-form-num">Sighting ${idx}</div>
+    <button class="btn-remove-spec" type="button" onclick="removeSpecimenForm(${idx})">✕</button>
+    <div class="form-row-2">
+      <div><label class="form-label">Common name</label><input type="text" id="spec-name-${idx}" value="${esc(pre&&pre.name||'')}" placeholder="e.g. Neem" oninput="scheduleDraft()"></div>
+      <div><label class="form-label">Latin name</label><input type="text" id="spec-latin-${idx}" value="${esc(pre&&pre.latin||'')}" placeholder="e.g. Azadirachta indica" oninput="scheduleDraft()"></div>
+    </div>
+    <div class="form-row"><label class="form-label">Observation notes</label><textarea id="spec-note-${idx}" placeholder="Describe what you saw…" oninput="scheduleDraft()">${esc(pre&&pre.note||'')}</textarea></div>
+    <div class="form-row"><label class="form-label">Tags (comma separated)</label><input type="text" id="spec-tags-${idx}" value="${esc(tagsVal)}" placeholder="e.g. tree, flowering" oninput="scheduleDraft()"></div>
+    <div class="form-row">
+      <label class="form-label">Photos</label>
+      <div class="photo-picker">
+        <div class="photo-picker-thumbs" id="spec-photo-thumbs-${idx}"></div>
+        <button class="photo-picker-add">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="14" height="14" rx="2"/><circle cx="5.5" cy="5.5" r="1.5"/><path d="M15 11l-4-4L5 13"/></svg>
+          Add photos
+          <input type="file" accept="image/*" multiple onchange="handleSpecimenPhotos(${idx},event)">
+        </button>
+        <div class="pp-spinner" id="spec-spinner-${idx}">Uploading…</div>
+      </div>
+    </div>`;
+  document.getElementById('specimens-container').appendChild(div);
+  // Populate existing photos
+  (div._photos||[]).forEach(p=>addSpecimenPhotoThumb(idx,p.url));
+}
+
+function removeSpecimenForm(idx){ const el=document.getElementById('spec-'+idx); if(el) el.remove(); }
+
+function addSpecimenPhotoThumb(idx, url){
+  const form=document.getElementById('spec-'+idx); if(!form) return;
+  if(!form._photos.find(p=>p.url===url)) form._photos.push({url,caption:null});
+  const container=document.getElementById('spec-photo-thumbs-'+idx); if(!container) return;
+  const wrap=document.createElement('div'); wrap.className='pp-thumb-wrap';
+  const img=document.createElement('img'); img.className='pp-thumb'; img.src=url;
+  const rm=document.createElement('button'); rm.className='pp-remove'; rm.textContent='✕';
+  rm.onclick=()=>{ wrap.remove(); form._photos=form._photos.filter(p=>p.url!==url); scheduleDraft(); };
+  wrap.appendChild(img); wrap.appendChild(rm);
+  container.appendChild(wrap);
+}
+
+async function handleSpecimenPhotos(idx, event){
+  const files=Array.from(event.target.files); if(!files.length) return;
+  const spinner=document.getElementById('spec-spinner-'+idx);
+  spinner.classList.add('visible');
+  for(const file of files){
+    try{ const url=await uploadPhoto(file); addSpecimenPhotoThumb(idx,url); scheduleDraft(); }
+    catch(e){ toast('Upload failed'); }
+  }
+  spinner.classList.remove('visible');
+  event.target.value='';
+}
+
+/* ── SAVE ── */
+async function saveEntry(){
+  const date=document.getElementById('f-date').value;
+  const location=document.getElementById('f-location').value.trim();
+  const outingNote=document.getElementById('f-outing-note').value.trim();
+  const forms=document.getElementById('specimens-container').querySelectorAll('.specimen-form');
+  const specimens=[];
+  for(const form of forms){
+    const idx=form.id.replace('spec-','');
+    const name=document.getElementById('spec-name-'+idx)?.value.trim();
+    if(!name) continue;
+    specimens.push({
+      name, latin:document.getElementById('spec-latin-'+idx)?.value.trim()||'',
+      note:document.getElementById('spec-note-'+idx)?.value.trim()||'',
+      tags:(document.getElementById('spec-tags-'+idx)?.value||'').split(',').map(t=>t.trim()).filter(Boolean),
+      photos: form._photos||[]
+    });
+  }
+  if(!specimens.length){alert('Add at least one sighting.');return;}
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true; btn.textContent='Saving…';
+  try{
+    const payload={date,location,outingNote,photos:entryFormPhotos,specimens};
+    if(editingId) await api('PUT','/api/entries/'+editingId,payload);
+    else{ await api('POST','/api/entries',payload); localStorage.removeItem(DRAFT_KEY); document.getElementById('draft-banner').classList.remove('visible'); }
+    toast(editingId?'Entry updated':'Entry saved');
+    await loadFilters(); await fetchAndRender(); closeModal();
+  }catch(e){ alert('Save failed: '+e.message); }
+  btn.disabled=false; btn.textContent='Save entry';
+}
+
+/* ── TOAST ── */
+let toastTimer;
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2500); }
+
+load();
+</script>
+</body>
+</html>
