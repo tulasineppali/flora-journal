@@ -1,6 +1,7 @@
 // Flora Journal — local server
 // Requires Node.js 22 or newer (uses built-in node:sqlite)
 
+
 const express = require('express');
 const multer  = require('multer');
 const path    = require('path');
@@ -19,9 +20,9 @@ const { DatabaseSync } = require('node:sqlite');
 const app  = express();
 const PORT = 3000;
 
-const DB_PATH     = path.join(__dirname, 'db', 'journal.db');
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
-const PUBLIC_DIR  = path.join(__dirname, 'public');
+const DATA_DIR    = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
+const DB_PATH     = path.join(DATA_DIR, 'db', 'journal.db');
+const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 
 fs.mkdirSync(path.join(__dirname, 'db'), { recursive: true });
 fs.mkdirSync(UPLOADS_DIR,                { recursive: true });
