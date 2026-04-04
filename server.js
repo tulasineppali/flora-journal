@@ -1,7 +1,6 @@
 // Flora Journal — local server
 // Requires Node.js 22 or newer (uses built-in node:sqlite)
 
-
 const express = require('express');
 const multer  = require('multer');
 const path    = require('path');
@@ -18,14 +17,25 @@ if (major < 22) {
 const { DatabaseSync } = require('node:sqlite');
 
 const app  = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
+// On Railway the persistent volume is mounted at RAILWAY_VOLUME_MOUNT_PATH.
+// Locally, data lives inside the project folder as before.
 const DATA_DIR    = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
 const DB_PATH     = path.join(DATA_DIR, 'db', 'journal.db');
 const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
+const PUBLIC_DIR  = path.join(__dirname, 'public');
 
-fs.mkdirSync(path.join(__dirname, 'db'), { recursive: true });
-fs.mkdirSync(UPLOADS_DIR,                { recursive: true });
+// Create directories BEFORE opening the DB. On first deploy the volume
+// exists but its subdirectories have not been created yet.
+try {
+  fs.mkdirSync(path.join(DATA_DIR, 'db'), { recursive: true });
+  fs.mkdirSync(UPLOADS_DIR,               { recursive: true });
+} catch (e) {
+  console.error('Could not create data directories:', e.message);
+  console.error('DATA_DIR =', DATA_DIR);
+  process.exit(1);
+}
 
 // ── Database ─────────────────────────────────────────────────
 const db = new DatabaseSync(DB_PATH);
