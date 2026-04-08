@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Flora Journal</title>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -14,175 +17,207 @@
   --green: #3b6d11; --green-bg: #eaf3de;
   --amber: #ba7517; --amber-bg: #faeeda;
   --red: #c0392b;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
-html { scroll-behavior: smooth; }
-body { background: var(--paper); font-family: 'Karla', sans-serif; color: var(--ink-soft); min-height: 100vh; font-size: 16px; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { background: var(--paper); font-family: 'Karla', sans-serif; color: var(--ink-soft); min-height: 100dvh; font-size: 16px; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
 
 /* NAV */
-nav { position: sticky; top: 0; z-index: 200; background: var(--paper); border-bottom: 1px solid var(--rule); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px; }
-.nav-title { font-family: 'Lora', serif; font-size: 19px; font-weight: 400; color: var(--ink); }
-.nav-right { display: flex; align-items: center; gap: 10px; }
-.nav-count { font-size: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.6px; }
-.btn-primary { background: var(--ink); color: var(--paper); border: none; border-radius: 3px; font-family: 'Karla', sans-serif; font-size: 14px; padding: 8px 18px; cursor: pointer; transition: opacity 0.15s; }
-.btn-primary:hover { opacity: 0.8; }
-.btn-icon-nav { width: 36px; height: 36px; border-radius: 3px; border: 0.5px solid var(--rule); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ink-muted); transition: background 0.12s; }
-.btn-icon-nav:hover, .btn-icon-nav.active { background: var(--rule-light); color: var(--ink); }
+nav {
+  position: sticky; top: 0; z-index: 200;
+  background: var(--paper); border-bottom: 1px solid var(--rule);
+  padding: 0 1.25rem; padding-top: var(--safe-top);
+  display: flex; align-items: center; justify-content: space-between;
+  height: calc(56px + var(--safe-top));
+}
+.nav-title { font-family: 'Lora', serif; font-size: 18px; font-weight: 400; color: var(--ink); }
+.nav-right { display: flex; align-items: center; gap: 8px; }
+.nav-count { font-size: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.6px; display: none; }
+@media (min-width: 480px) { .nav-count { display: inline; } }
+.btn-primary { background: var(--ink); color: var(--paper); border: none; border-radius: 6px; font-family: 'Karla', sans-serif; font-size: 14px; padding: 9px 16px; cursor: pointer; transition: opacity 0.15s; white-space: nowrap; min-height: 44px; }
+.btn-primary:active { opacity: 0.7; }
+.btn-icon-nav { width: 44px; height: 44px; border-radius: 6px; border: 0.5px solid var(--rule); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ink-muted); }
+.btn-icon-nav:active, .btn-icon-nav.active { background: var(--rule-light); color: var(--ink); }
 
 /* SEARCH */
-.search-bar { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; overflow: hidden; max-height: 0; transition: max-height 0.25s ease, padding 0.25s ease; }
-.search-bar.open { max-height: 80px; padding: 1rem 1.5rem 0; }
+.search-bar { max-width: 760px; margin: 0 auto; padding: 0 1.25rem; overflow: hidden; max-height: 0; transition: max-height 0.25s ease, padding 0.25s ease; }
+.search-bar.open { max-height: 80px; padding: 0.9rem 1.25rem 0; }
 .search-wrap { position: relative; }
-.search-input { width: 100%; background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 3px; font-family: 'Karla', sans-serif; font-size: 15px; color: var(--ink-soft); padding: 10px 40px 10px 14px; outline: none; transition: border-color 0.15s; }
+.search-input { width: 100%; background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 8px; font-family: 'Karla', sans-serif; font-size: 16px; color: var(--ink-soft); padding: 11px 40px 11px 14px; outline: none; -webkit-appearance: none; }
 .search-input:focus { border-color: var(--ink-muted); }
-.search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--ink-faint); font-size: 16px; }
+.search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--ink-faint); font-size: 18px; padding: 6px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
 
 /* FILTERS */
-.filter-bar { max-width: 760px; margin: 0 auto; padding: 1.25rem 1.5rem 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.filter-select { background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 3px; font-family: 'Karla', sans-serif; font-size: 13px; color: var(--ink-soft); padding: 7px 28px 7px 11px; cursor: pointer; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239a8c74'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 9px center; transition: border-color 0.12s; }
-.filter-select:focus { border-color: var(--ink-muted); }
+.filter-bar { max-width: 760px; margin: 0 auto; padding: 1rem 1.25rem 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filter-select { background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 6px; font-family: 'Karla', sans-serif; font-size: 14px; color: var(--ink-soft); padding: 9px 28px 9px 11px; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239a8c74'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 9px center; min-height: 44px; }
 .filter-select.active { border-color: var(--amber); color: var(--amber); background-color: var(--amber-bg); }
-.filter-clear { font-size: 13px; color: var(--ink-faint); background: none; border: none; cursor: pointer; padding: 4px 6px; }
+.filter-clear { font-size: 14px; color: var(--ink-faint); background: none; border: none; cursor: pointer; padding: 8px; min-height: 44px; }
 .filter-results { font-size: 13px; color: var(--ink-faint); margin-left: auto; }
 
-main { max-width: 760px; margin: 0 auto; padding: 1.75rem 1.5rem 5rem; }
-.entries { display: flex; flex-direction: column; gap: 3rem; }
+main { max-width: 760px; margin: 0 auto; padding: 1.25rem 1.25rem calc(2rem + var(--safe-bottom)); }
+.entries { display: flex; flex-direction: column; gap: 2.5rem; }
 
 /* ENTRY CARD */
-.entry { background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 4px; overflow: hidden; position: relative; animation: fadeUp 0.3s ease both; }
+.entry { background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 8px; overflow: hidden; position: relative; animation: fadeUp 0.3s ease both; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 .tape { position: absolute; background: rgba(220,200,160,0.5); border: 0.5px solid rgba(180,155,100,0.3); border-radius: 1px; pointer-events: none; z-index: 2; }
 
-.entry-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 1.4rem 1.4rem 0; margin-bottom: 1rem; gap: 1rem; }
-.entry-meta { display: flex; flex-direction: column; gap: 6px; }
-.entry-date { font-size: 12px; color: var(--ink-faint); letter-spacing: 0.8px; text-transform: uppercase; }
-.entry-location { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--amber); background: var(--amber-bg); padding: 4px 10px; border-radius: 2px; width: fit-content; }
+.entry-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 1.1rem 1.1rem 0; margin-bottom: 0.8rem; gap: 0.75rem; }
+.entry-meta { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
+.entry-date { font-size: 11px; color: var(--ink-faint); letter-spacing: 0.8px; text-transform: uppercase; }
+.entry-location { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: var(--amber); background: var(--amber-bg); padding: 4px 10px; border-radius: 4px; width: fit-content; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .loc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); flex-shrink: 0; }
-.entry-actions { display: flex; gap: 6px; }
-.btn-icon { width: 30px; height: 30px; border-radius: 3px; border: 0.5px solid var(--rule); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ink-muted); font-size: 13px; transition: background 0.12s; }
-.btn-icon:hover { background: var(--rule-light); }
+.entry-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.btn-icon { width: 38px; height: 38px; border-radius: 6px; border: 0.5px solid var(--rule); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ink-muted); font-size: 13px; }
+.btn-icon:active { background: var(--rule-light); }
 
-/* OUTING FIELD NOTE */
-.outing-note { font-family: 'Lora', serif; font-style: italic; font-size: 16px; color: var(--ink-soft); line-height: 1.75; padding: 0 1.4rem 1rem; }
+.outing-note { font-family: 'Lora', serif; font-style: italic; font-size: 15px; color: var(--ink-soft); line-height: 1.7; padding: 0 1.1rem 0.9rem; }
 
-/* ENTRY-LEVEL PHOTO STRIP */
-.entry-photo-strip { padding: 0 1.4rem 1.2rem; }
-.photo-strip-label { font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
-.photo-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
-.photo-strip::-webkit-scrollbar { height: 4px; }
-.photo-strip::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 2px; }
-.strip-thumb { width: 140px; height: 100px; flex-shrink: 0; object-fit: cover; border-radius: 3px; border: 0.5px solid var(--rule); cursor: pointer; transition: transform 0.2s; }
-.strip-thumb:hover { transform: scale(1.03); }
+/* ENTRY-LEVEL PHOTO CAROUSEL */
+.entry-carousel { position: relative; width: 100%; overflow: hidden; margin-bottom: 0.5rem; }
+.entry-carousel-track { display: flex; transition: transform 0.3s ease; will-change: transform; }
+.entry-carousel-slide { min-width: 100%; aspect-ratio: 16/9; overflow: hidden; cursor: pointer; }
+.entry-carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.35); border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 10px 14px; border-radius: 4px; z-index: 5; line-height: 1; }
+.carousel-nav.prev { left: 8px; }
+.carousel-nav.next { right: 8px; }
+.carousel-dots { display: flex; justify-content: center; gap: 5px; padding: 6px 0 2px; }
+.carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rule); border: none; cursor: pointer; padding: 0; transition: background 0.15s; }
+.carousel-dot.active { background: var(--ink-muted); }
+.entry-carousel-label { font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.6px; padding: 0 1.1rem 0.5rem; }
 
 /* SPECIMENS */
 .specimens-list { display: flex; flex-direction: column; }
-.specimen { display: grid; grid-template-columns: 300px 1fr; border-top: 0.5px solid var(--rule-light); }
+.specimen { display: grid; grid-template-columns: 240px 1fr; border-top: 0.5px solid var(--rule-light); }
 .specimen:nth-child(even) { direction: rtl; }
 .specimen:nth-child(even) > * { direction: ltr; }
 
-/* SPECIMEN PHOTO GALLERY */
-.spec-gallery { width: 100%; background: var(--rule-light); overflow: hidden; }
-.gallery-main { width: 100%; aspect-ratio: 4/3; overflow: hidden; position: relative; cursor: pointer; }
-.gallery-main img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; display: block; }
-.gallery-main:hover img { transform: scale(1.03); }
-.gallery-main .upload-hint { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 100%; color: var(--ink-faint); font-size: 13px; text-align: center; padding: 1rem; }
-.gallery-main .upload-hint svg { opacity: 0.35; }
-.gallery-thumbs { display: flex; gap: 3px; padding: 3px; background: var(--rule-light); overflow-x: auto; scrollbar-width: none; }
-.gallery-thumbs::-webkit-scrollbar { display: none; }
-.g-thumb { width: 52px; height: 40px; object-fit: cover; border-radius: 2px; cursor: pointer; opacity: 0.7; transition: opacity 0.15s; flex-shrink: 0; border: 1.5px solid transparent; }
-.g-thumb:hover { opacity: 1; }
-.g-thumb.active { opacity: 1; border-color: var(--ink); }
-.g-add-btn { width: 52px; height: 40px; flex-shrink: 0; background: rgba(0,0,0,0.07); border: 1px dashed var(--rule); border-radius: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ink-faint); font-size: 18px; line-height: 1; transition: background 0.12s; }
-.g-add-btn:hover { background: rgba(0,0,0,0.13); }
+/* SPECIMEN PHOTO CAROUSEL (replaces static gallery) */
+.spec-carousel { width: 100%; background: var(--rule-light); overflow: hidden; position: relative; }
+.spec-carousel-track-wrap { width: 100%; aspect-ratio: 4/3; overflow: hidden; position: relative; }
+.spec-carousel-track { display: flex; height: 100%; transition: transform 0.3s ease; will-change: transform; }
+.spec-carousel-slide { min-width: 100%; height: 100%; overflow: hidden; cursor: pointer; }
+.spec-carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.spec-carousel-slide .upload-hint { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 100%; color: var(--ink-faint); font-size: 13px; text-align: center; padding: 1rem; cursor: pointer; }
+.spec-carousel-slide .upload-hint svg { opacity: 0.35; }
+.spec-car-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.3); border: none; color: #fff; font-size: 18px; cursor: pointer; padding: 8px 11px; border-radius: 3px; z-index: 5; line-height: 1; }
+.spec-car-nav.prev { left: 5px; }
+.spec-car-nav.next { right: 5px; }
+.spec-car-dots { display: flex; justify-content: center; gap: 4px; padding: 5px 3px; }
+.spec-car-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--rule); border: none; cursor: pointer; padding: 0; transition: background 0.15s; }
+.spec-car-dot.active { background: var(--ink-muted); }
+.spec-car-add { width: 100%; padding: 7px; background: rgba(0,0,0,0.04); border: none; border-top: 0.5px solid var(--rule-light); cursor: pointer; font-family: 'Karla', sans-serif; font-size: 12px; color: var(--ink-faint); letter-spacing: 0.3px; min-height: 36px; }
+.spec-car-add:active { background: var(--rule-light); }
 
-.spec-text { padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; }
-.spec-name { font-family: 'Lora', serif; font-size: 20px; font-weight: 400; color: var(--ink); margin-bottom: 3px; line-height: 1.2; }
-.spec-latin { font-family: 'Lora', serif; font-size: 14px; font-style: italic; color: var(--ink-muted); margin-bottom: 12px; }
-.spec-note { font-size: 15px; color: var(--ink-soft); line-height: 1.8; }
-.spec-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
-.spec-tag { font-size: 12px; color: var(--green); background: var(--green-bg); padding: 4px 10px; border-radius: 2px; }
+.spec-text { padding: 1.1rem; display: flex; flex-direction: column; justify-content: center; }
+.spec-name { font-family: 'Lora', serif; font-size: 18px; font-weight: 400; color: var(--ink); margin-bottom: 2px; line-height: 1.2; }
+.spec-latin { font-family: 'Lora', serif; font-size: 13px; font-style: italic; color: var(--ink-muted); margin-bottom: 10px; }
+.spec-note { font-size: 14px; color: var(--ink-soft); line-height: 1.75; }
+.spec-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+.spec-tag { font-size: 12px; color: var(--green); background: var(--green-bg); padding: 3px 9px; border-radius: 4px; }
 mark { background: #fef3c7; color: inherit; border-radius: 2px; padding: 0 1px; }
 
 /* LIGHTBOX */
-.lightbox { display: none; position: fixed; inset: 0; z-index: 900; background: rgba(20,16,10,0.92); align-items: center; justify-content: center; }
+.lightbox { display: none; position: fixed; inset: 0; z-index: 900; background: rgba(15,12,8,0.95); align-items: center; justify-content: center; touch-action: none; }
 .lightbox.open { display: flex; }
-.lightbox img { max-width: 92vw; max-height: 88vh; object-fit: contain; border-radius: 3px; }
-.lb-close { position: absolute; top: 1.25rem; right: 1.5rem; background: none; border: none; color: rgba(255,255,255,0.7); font-size: 28px; cursor: pointer; line-height: 1; }
-.lb-close:hover { color: #fff; }
-.lb-prev, .lb-next { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.8); font-size: 22px; cursor: pointer; padding: 12px 16px; border-radius: 3px; transition: background 0.15s; }
-.lb-prev:hover, .lb-next:hover { background: rgba(255,255,255,0.2); }
-.lb-prev { left: 1rem; }
-.lb-next { right: 1rem; }
-.lb-caption { position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.6); font-size: 14px; font-family: 'Lora', serif; font-style: italic; }
+.lb-img-wrap { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.lightbox img { max-width: 96vw; max-height: 88dvh; object-fit: contain; border-radius: 3px; user-select: none; }
+.lb-close { position: absolute; top: calc(1rem + var(--safe-top)); right: 1rem; background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.9); font-size: 22px; cursor: pointer; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.lb-prev, .lb-next { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.9); font-size: 24px; cursor: pointer; padding: 14px 18px; border-radius: 6px; min-width: 54px; min-height: 54px; display: flex; align-items: center; justify-content: center; }
+.lb-prev { left: 0.5rem; }
+.lb-next { right: 0.5rem; }
+.lb-counter { position: absolute; bottom: calc(1.5rem + var(--safe-bottom)); left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.5); font-size: 13px; font-family: 'Karla', sans-serif; }
 
 /* PAGINATION */
-.pagination { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 3rem; padding-top: 1.75rem; border-top: 1px dashed var(--rule); flex-wrap: wrap; }
-.page-btn { min-width: 34px; height: 34px; border-radius: 3px; border: 0.5px solid var(--rule); background: transparent; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 14px; color: var(--ink-muted); transition: all 0.12s; padding: 0 8px; }
-.page-btn:hover:not(:disabled) { background: var(--rule-light); }
+.pagination { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--rule); flex-wrap: wrap; }
+.page-btn { min-width: 44px; height: 44px; border-radius: 6px; border: 0.5px solid var(--rule); background: transparent; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 14px; color: var(--ink-muted); padding: 0 8px; }
+.page-btn:active { background: var(--rule-light); }
 .page-btn.current { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .page-btn:disabled { opacity: 0.3; cursor: default; }
 .page-info { font-size: 13px; color: var(--ink-faint); padding: 0 4px; }
 
-.empty-state { text-align: center; padding: 5rem 1rem; color: var(--ink-faint); }
-.empty-state p { font-family: 'Lora', serif; font-style: italic; font-size: 18px; margin-bottom: 1.25rem; }
+.empty-state { text-align: center; padding: 4rem 1rem; color: var(--ink-faint); }
+.empty-state p { font-family: 'Lora', serif; font-style: italic; font-size: 17px; margin-bottom: 1.25rem; }
 
 /* TOAST */
-.toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--paper); padding: 10px 20px; border-radius: 4px; font-size: 14px; opacity: 0; transition: all 0.2s; pointer-events: none; z-index: 999; white-space: nowrap; }
+.toast { position: fixed; bottom: calc(1.5rem + var(--safe-bottom)); left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--paper); padding: 11px 20px; border-radius: 20px; font-size: 14px; opacity: 0; transition: all 0.2s; pointer-events: none; z-index: 999; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* MODAL */
-.modal-bg { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(42,36,22,0.52); align-items: flex-start; justify-content: center; padding: 1.5rem 1rem; overflow-y: auto; }
+.modal-bg { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(42,36,22,0.55); align-items: flex-end; justify-content: center; }
 .modal-bg.open { display: flex; }
-.modal { background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 6px; width: 100%; max-width: 620px; padding: 2rem; animation: slideUp 0.2s ease; margin: auto; }
-@keyframes slideUp { from { transform:translateY(14px); opacity:0; } to { transform:translateY(0); opacity:1; } }
-.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; }
-.modal-title { font-family: 'Lora', serif; font-size: 20px; font-weight: 400; color: var(--ink); }
-.draft-status { font-size: 12px; color: var(--ink-faint); font-style: italic; }
-.form-row { margin-bottom: 1.2rem; }
-.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.2rem; }
-.form-label { display: block; font-size: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 7px; }
-input[type=text], input[type=date], textarea { width: 100%; background: var(--paper); border: 0.5px solid var(--rule); border-radius: 3px; font-family: 'Karla', sans-serif; font-size: 15px; color: var(--ink-soft); padding: 10px 12px; outline: none; transition: border-color 0.15s; resize: vertical; }
-input:focus, textarea:focus { border-color: var(--ink-muted); }
-textarea { min-height: 80px; line-height: 1.7; }
+.modal {
+  background: var(--paper-card); border-radius: 16px 16px 0 0;
+  width: 100%; max-width: 640px;
+  max-height: 92dvh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 0 1.25rem calc(1.5rem + var(--safe-bottom));
+  animation: slideSheet 0.28s ease;
+}
+@keyframes slideSheet { from { transform:translateY(100%); } to { transform:translateY(0); } }
 
-/* PHOTO PICKER (used in both entry and sighting forms) */
-.photo-picker { border: 0.5px solid var(--rule); border-radius: 3px; overflow: hidden; }
-.photo-picker-thumbs { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; min-height: 0; }
+.modal-handle { width: 36px; height: 4px; background: var(--rule); border-radius: 2px; margin: 12px auto 0; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 0 1.25rem; border-bottom: 0.5px solid var(--rule-light); margin-bottom: 1.25rem; }
+.modal-title { font-family: 'Lora', serif; font-size: 19px; font-weight: 400; color: var(--ink); }
+.draft-status { font-size: 12px; color: var(--ink-faint); font-style: italic; }
+.form-row { margin-bottom: 1.1rem; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.1rem; }
+.form-label { display: block; font-size: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+input[type=text], input[type=date], textarea {
+  width: 100%; background: var(--paper); border: 0.5px solid var(--rule); border-radius: 8px;
+  font-family: 'Karla', sans-serif; font-size: 16px; color: var(--ink-soft);
+  padding: 11px 12px; outline: none; -webkit-appearance: none; resize: vertical;
+}
+input:focus, textarea:focus { border-color: var(--ink-muted); }
+textarea { min-height: 80px; line-height: 1.65; }
+
+/* PHOTO PICKER in form */
+.photo-picker { border: 0.5px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.photo-picker-thumbs { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; }
 .photo-picker-thumbs:empty { display: none; }
-.pp-thumb-wrap { position: relative; width: 80px; height: 60px; }
-.pp-thumb { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; display: block; }
-.pp-remove { position: absolute; top: -5px; right: -5px; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--paper); border: none; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; line-height: 1; }
-.pp-remove:hover { background: var(--red); }
-.photo-picker-add { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-top: 0.5px solid var(--rule-light); cursor: pointer; color: var(--ink-muted); font-size: 13px; background: transparent; width: 100%; border-left: none; border-right: none; border-bottom: none; font-family: 'Karla', sans-serif; transition: background 0.12s; position: relative; }
-.photo-picker-add:hover { background: var(--rule-light); }
-.photo-picker-add input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
-.pp-spinner { font-size: 12px; color: var(--ink-faint); padding: 6px 12px; display: none; }
+.pp-thumb-wrap { position: relative; width: 76px; height: 58px; }
+.pp-thumb { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; display: block; }
+.pp-remove { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: var(--paper); border: none; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+
+/* Camera / photo source buttons */
+.photo-source-row { display: flex; gap: 0; border-top: 0.5px solid var(--rule-light); }
+.photo-src-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 8px; background: transparent; border: none; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 13px; color: var(--ink-muted); min-height: 48px; position: relative; transition: background 0.12s; }
+.photo-src-btn:active { background: var(--rule-light); }
+.photo-src-btn + .photo-src-btn { border-left: 0.5px solid var(--rule-light); }
+.photo-src-btn input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.pp-spinner { font-size: 12px; color: var(--ink-faint); padding: 6px 12px; display: none; border-top: 0.5px solid var(--rule-light); text-align: center; }
 .pp-spinner.visible { display: block; }
 
-.specimen-form { background: var(--paper); border: 0.5px solid var(--rule); border-radius: 3px; padding: 1.25rem; margin-bottom: 12px; position: relative; }
-.specimen-form-num { font-size: 12px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 14px; }
-.btn-remove-spec { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 16px; }
-.btn-remove-spec:hover { color: var(--red); }
-.btn-add-spec { width: 100%; padding: 10px; border: 1px dashed var(--rule); background: transparent; border-radius: 3px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 14px; color: var(--ink-muted); margin-bottom: 1.5rem; transition: background 0.12s; }
-.btn-add-spec:hover { background: var(--rule-light); }
-.modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.75rem; padding-top: 1.25rem; border-top: 0.5px solid var(--rule-light); }
-.btn-cancel { padding: 9px 20px; border: 0.5px solid var(--rule); background: transparent; border-radius: 3px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 14px; color: var(--ink-muted); }
-.btn-cancel:hover { background: var(--rule-light); }
-.btn-save { padding: 9px 24px; background: var(--ink); color: var(--paper); border: none; border-radius: 3px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 14px; transition: opacity 0.15s; }
-.btn-save:hover { opacity: 0.8; }
-.btn-save:disabled { opacity: 0.4; cursor: default; }
-.btn-discard { padding: 9px 16px; border: none; background: transparent; border-radius: 3px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 13px; color: var(--ink-faint); margin-right: auto; }
-.btn-discard:hover { color: var(--red); }
-.draft-banner { background: var(--amber-bg); border: 0.5px solid var(--rule); border-radius: 3px; padding: 10px 14px; margin-bottom: 1.2rem; display: none; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--amber); }
-.draft-banner.visible { display: flex; }
-.draft-resume { background: none; border: 0.5px solid var(--amber); border-radius: 2px; padding: 4px 12px; font-family: 'Karla', sans-serif; font-size: 13px; color: var(--amber); cursor: pointer; }
-.draft-resume:hover { background: var(--amber); color: var(--paper); }
+.specimen-form { background: var(--paper); border: 0.5px solid var(--rule); border-radius: 8px; padding: 1rem; margin-bottom: 12px; position: relative; }
+.specimen-form-num { font-size: 12px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
+.btn-remove-spec { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 20px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
 
-@media (max-width: 580px) {
+.btn-add-spec { width: 100%; padding: 13px; border: 1px dashed var(--rule); background: transparent; border-radius: 8px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 15px; color: var(--ink-muted); margin-bottom: 1.25rem; min-height: 48px; }
+.btn-add-spec:active { background: var(--rule-light); }
+
+.modal-footer { display: flex; gap: 10px; padding-top: 1.1rem; border-top: 0.5px solid var(--rule-light); margin-top: 0.5rem; }
+.btn-cancel { flex: 1; padding: 13px; border: 0.5px solid var(--rule); background: transparent; border-radius: 8px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 15px; color: var(--ink-muted); min-height: 50px; }
+.btn-save { flex: 2; padding: 13px; background: var(--ink); color: var(--paper); border: none; border-radius: 8px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 15px; min-height: 50px; }
+.btn-save:active { opacity: 0.8; }
+.btn-save:disabled { opacity: 0.4; }
+.btn-discard { padding: 13px 14px; border: none; background: transparent; border-radius: 8px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 13px; color: var(--ink-faint); min-height: 50px; }
+
+.draft-banner { background: var(--amber-bg); border: 0.5px solid var(--rule); border-radius: 8px; padding: 10px 14px; margin-bottom: 1rem; display: none; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--amber); }
+.draft-banner.visible { display: flex; }
+.draft-resume { background: none; border: 0.5px solid var(--amber); border-radius: 4px; padding: 6px 14px; font-family: 'Karla', sans-serif; font-size: 13px; color: var(--amber); cursor: pointer; min-height: 36px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 540px) {
   .specimen { grid-template-columns: 1fr; }
   .specimen:nth-child(even) { direction: ltr; }
-  nav { padding: 0 1rem; }
-  .filter-bar, .search-bar, main { padding-left: 1rem; padding-right: 1rem; }
+  .spec-carousel-track-wrap { aspect-ratio: 3/2; }
   .form-row-2 { grid-template-columns: 1fr; }
+  .entry-carousel-slide { aspect-ratio: 4/3; }
+}
+@media (min-width: 541px) {
+  .modal-bg { align-items: center; padding: 1rem; }
+  .modal { border-radius: 12px; max-height: 90dvh; padding: 0 2rem calc(1.5rem); }
+  .modal-handle { display: none; }
 }
 </style>
 </head>
@@ -193,15 +228,15 @@ textarea { min-height: 80px; line-height: 1.7; }
   <div class="nav-right">
     <span class="nav-count" id="entry-count">—</span>
     <button class="btn-icon-nav" id="search-toggle" title="Search" onclick="toggleSearch()">
-      <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M13 13l3 3"/></svg>
+      <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M13 13l3 3"/></svg>
     </button>
-    <button class="btn-primary" onclick="openModal(null)">+ New entry</button>
+    <button class="btn-primary" onclick="openModal(null)">+ New</button>
   </div>
 </nav>
 
 <div class="search-bar" id="search-bar">
   <div class="search-wrap">
-    <input type="text" class="search-input" id="search-input" placeholder="Search plants, notes, locations, tags…" oninput="onSearch()" autocomplete="off">
+    <input type="text" class="search-input" id="search-input" placeholder="Search plants, notes, locations…" oninput="onSearch()" autocomplete="off" autocorrect="off" autocapitalize="off">
     <button class="search-clear" onclick="clearSearch()">✕</button>
   </div>
 </div>
@@ -213,12 +248,12 @@ textarea { min-height: 80px; line-height: 1.7; }
   <span class="filter-results" id="filter-results"></span>
 </div>
 
-<div style="max-width:760px;margin:0 auto;padding:0 1.5rem;">
+<div style="max-width:760px;margin:0 auto;padding:0 1.25rem;">
   <div class="draft-banner" id="draft-banner">
     <span>You have an unsaved draft.</span>
-    <div style="display:flex;gap:8px;">
-      <button class="draft-resume" onclick="resumeDraft()">Resume draft</button>
-      <button style="background:none;border:none;color:var(--amber);cursor:pointer;font-size:16px;" onclick="discardDraft(true)">✕</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="draft-resume" onclick="resumeDraft()">Resume</button>
+      <button style="background:none;border:none;color:var(--amber);cursor:pointer;font-size:20px;padding:4px;min-width:36px;" onclick="discardDraft(true)">✕</button>
     </div>
   </div>
 </div>
@@ -231,24 +266,27 @@ textarea { min-height: 80px; line-height: 1.7; }
 <div class="toast" id="toast"></div>
 
 <!-- LIGHTBOX -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+<div class="lightbox" id="lightbox">
   <button class="lb-close" onclick="closeLightbox()">✕</button>
-  <button class="lb-prev" onclick="lbNav(-1);event.stopPropagation()">‹</button>
-  <img id="lb-img" src="" alt="">
-  <button class="lb-next" onclick="lbNav(1);event.stopPropagation()">›</button>
-  <div class="lb-caption" id="lb-caption"></div>
+  <button class="lb-prev" onclick="lbNav(-1)" id="lb-prev">‹</button>
+  <div class="lb-img-wrap" id="lb-img-wrap">
+    <img id="lb-img" src="" alt="">
+  </div>
+  <button class="lb-next" onclick="lbNav(1)" id="lb-next">›</button>
+  <div class="lb-counter" id="lb-counter"></div>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL (bottom sheet on mobile) -->
 <div class="modal-bg" id="modal-bg" onclick="handleBgClick(event)">
-  <div class="modal">
+  <div class="modal" id="modal-inner">
+    <div class="modal-handle"></div>
     <div class="modal-header">
       <div class="modal-title" id="modal-title">New entry</div>
       <div class="draft-status" id="draft-status"></div>
     </div>
     <div class="form-row-2">
       <div><label class="form-label">Date</label><input type="date" id="f-date" oninput="scheduleDraft()"></div>
-      <div><label class="form-label">Location</label><input type="text" id="f-location" placeholder="e.g. KBR National Park" oninput="scheduleDraft()"></div>
+      <div><label class="form-label">Location</label><input type="text" id="f-location" placeholder="e.g. KBR Park" oninput="scheduleDraft()"></div>
     </div>
     <div class="form-row">
       <label class="form-label">Field notes</label>
@@ -258,18 +296,25 @@ textarea { min-height: 80px; line-height: 1.7; }
       <label class="form-label">Entry photos</label>
       <div class="photo-picker" id="entry-photo-picker">
         <div class="photo-picker-thumbs" id="entry-photo-thumbs"></div>
-        <button class="photo-picker-add" onclick="">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="14" height="14" rx="2"/><circle cx="5.5" cy="5.5" r="1.5"/><path d="M15 11l-4-4L5 13"/></svg>
-          Add photos
-          <input type="file" accept="image/*" multiple onchange="handleEntryPhotos(event)">
-        </button>
+        <div class="photo-source-row">
+          <button class="photo-src-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Camera
+            <input type="file" accept="image/*" capture="environment" onchange="handleEntryPhotos(event)">
+          </button>
+          <button class="photo-src-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Library
+            <input type="file" accept="image/*" multiple onchange="handleEntryPhotos(event)">
+          </button>
+        </div>
         <div class="pp-spinner" id="entry-photo-spinner">Uploading…</div>
       </div>
     </div>
     <div id="specimens-container"></div>
     <button class="btn-add-spec" onclick="addSpecimenForm(null)">+ Add sighting</button>
     <div class="modal-footer">
-      <button class="btn-discard" id="btn-discard" onclick="discardDraft(false)" style="display:none">Discard draft</button>
+      <button class="btn-discard" id="btn-discard" onclick="discardDraft(false)" style="display:none">Discard</button>
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-save" id="btn-save" onclick="saveEntry()">Save entry</button>
     </div>
@@ -283,8 +328,6 @@ const DRAFT_KEY = 'flora-draft-v2';
 let allEntries = [], filtered = [], currentPage = 1;
 let editingId = null, specimenCount = 0;
 let searchQuery = '', draftTimer = null, searchTimer = null;
-
-// entry-level photos in the form { url, caption }[]
 let entryFormPhotos = [];
 
 /* ── API ── */
@@ -303,11 +346,8 @@ async function uploadPhoto(file) {
 }
 
 /* ── LOAD ── */
-async function load() {
-  await loadFilters();
-  await fetchAndRender();
-  checkDraftBanner();
-}
+async function load() { await loadFilters(); await fetchAndRender(); checkDraftBanner(); }
+
 async function loadFilters() {
   const { places, months } = await api('GET', '/api/filters');
   const pe=document.getElementById('filter-place'), me=document.getElementById('filter-month');
@@ -318,18 +358,19 @@ async function loadFilters() {
     return `<option value="${m}"${m===sm?' selected':''}>${new Date(+y,+mo-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</option>`;
   }).join('');
 }
+
 async function fetchAndRender() {
   const place=document.getElementById('filter-place').value;
   const month=document.getElementById('filter-month').value;
   const params=new URLSearchParams();
-  if(place)  params.set('place',place);
-  if(month)  params.set('month',month);
+  if(place) params.set('place',place);
+  if(month) params.set('month',month);
   if(searchQuery) params.set('search',searchQuery);
   allEntries = await api('GET', '/api/entries'+(params.toString()?'?'+params:''));
   filtered = allEntries;
   document.getElementById('entry-count').textContent = allEntries.length+(allEntries.length===1?' entry':' entries');
   const any=place||month||searchQuery;
-  document.getElementById('filter-results').textContent = any ? `${filtered.length} result${filtered.length!==1?'s':''}` : '';
+  document.getElementById('filter-results').textContent = any?`${filtered.length} result${filtered.length!==1?'s':'`}` : '';
   document.getElementById('filter-clear-btn').style.display = any?'':'none';
   document.getElementById('filter-place').classList.toggle('active',!!place);
   document.getElementById('filter-month').classList.toggle('active',!!month);
@@ -337,15 +378,15 @@ async function fetchAndRender() {
 }
 
 /* ── SEARCH / FILTERS ── */
-function onSearch() { clearTimeout(searchTimer); searchTimer=setTimeout(()=>{searchQuery=document.getElementById('search-input').value.trim();fetchAndRender();},300); }
-function clearSearch() { document.getElementById('search-input').value=''; searchQuery=''; fetchAndRender(); }
-function toggleSearch() {
+function onSearch(){ clearTimeout(searchTimer); searchTimer=setTimeout(()=>{searchQuery=document.getElementById('search-input').value.trim();fetchAndRender();},300); }
+function clearSearch(){ document.getElementById('search-input').value=''; searchQuery=''; fetchAndRender(); }
+function toggleSearch(){
   const bar=document.getElementById('search-bar'),btn=document.getElementById('search-toggle');
   const open=bar.classList.toggle('open'); btn.classList.toggle('active',open);
   if(open) setTimeout(()=>document.getElementById('search-input').focus(),260); else clearSearch();
 }
-function applyFilters() { fetchAndRender(); }
-function clearFilters() { document.getElementById('filter-place').value=''; document.getElementById('filter-month').value=''; fetchAndRender(); }
+function applyFilters(){ fetchAndRender(); }
+function clearFilters(){ document.getElementById('filter-place').value=''; document.getElementById('filter-month').value=''; fetchAndRender(); }
 
 /* ── RENDER ── */
 function renderPage() {
@@ -364,6 +405,8 @@ function renderPage() {
     el.className='entry'; el.style.animationDelay=(i*0.06)+'s';
     el.innerHTML=`<div class="tape" style="width:${38+(i*7)%18}px;height:14px;top:-7px;${tapes[i%tapes.length]};"></div>`+entryHTML(entry);
     list.appendChild(el);
+    // init carousels inside this entry
+    initCarousels(el, entry);
   });
   renderPagination(total);
 }
@@ -381,38 +424,36 @@ function entryHTML(e) {
       ${e.location?`<div class="entry-location"><span class="loc-dot"></span>${hi(e.location,searchQuery)}</div>`:''}
     </div>
     <div class="entry-actions">
-      <button class="btn-icon" title="Edit" onclick="openModal(${e.id})"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 2l3 3-9 9H2v-3L11 2z"/></svg></button>
-      <button class="btn-icon" title="Delete" onclick="deleteEntry(${e.id})">✕</button>
+      <button class="btn-icon" onclick="openModal(${e.id})"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 2l3 3-9 9H2v-3L11 2z"/></svg></button>
+      <button class="btn-icon" onclick="deleteEntry(${e.id})">✕</button>
     </div>
   </div>`;
 
   const note = e.outingNote ? `<div class="outing-note">${hi(e.outingNote,searchQuery)}</div>` : '';
 
-  // Entry-level photo strip
+  // Entry-level photos → carousel
   let entryPhotosHtml = '';
   if (e.photos && e.photos.length) {
-    const allUrls = JSON.stringify(e.photos.map(p=>p.url));
-    const thumbs = e.photos.map((p,i)=>`<img class="strip-thumb" src="${esc(p.url)}" onclick="openLightbox(${allUrls},${i})" alt="">`).join('');
-    entryPhotosHtml = `<div class="entry-photo-strip"><div class="photo-strip-label">Field photos</div><div class="photo-strip">${thumbs}</div></div>`;
+    const slides = e.photos.map((p,i)=>`<div class="entry-carousel-slide"><img src="${esc(p.url)}" alt="" loading="lazy"></div>`).join('');
+    const dots = e.photos.length > 1 ? `<div class="carousel-dots" id="ecd-${e.id}">${e.photos.map((_,i)=>`<button class="carousel-dot${i===0?' active':''}" onclick=""></button>`).join('')}</div>` : '';
+    const navs = e.photos.length > 1 ? `<button class="carousel-nav prev" onclick="">‹</button><button class="carousel-nav next" onclick="">›</button>` : '';
+    entryPhotosHtml = `<div class="entry-carousel-label">Field photos</div><div class="entry-carousel" id="ec-${e.id}"><div class="entry-carousel-track" id="ect-${e.id}">${slides}</div>${navs}${dots}</div>`;
   }
 
   const specs=(e.specimens||[]).map(s=>{
     const photos=s.photos||[];
-    const allUrls=JSON.stringify(photos.map(p=>p.url));
-    const mainSrc=photos[0]?photos[0].url:null;
-    const mainHtml=mainSrc
-      ? `<img src="${esc(mainSrc)}" id="gm-${e.id}-${s.id}" onclick="openLightbox(${allUrls},0)" alt="${esc(s.name||'')}">` 
-      : `<div class="upload-hint" onclick="addPhotoToSighting(${e.id},${s.id})"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>add photo</div>`;
-    const thumbsHtml=photos.map((p,i)=>`<img class="g-thumb${i===0?' active':''}" src="${esc(p.url)}" onclick="switchGallery(${e.id},${s.id},${i},${allUrls})" alt="">`).join('');
-    const galleryHtml=`<div class="spec-gallery">
-      <div class="gallery-main" id="gallery-main-${e.id}-${s.id}">${mainHtml}</div>
-      <div class="gallery-thumbs" id="gallery-thumbs-${e.id}-${s.id}">
-        ${thumbsHtml}
-        <button class="g-add-btn" onclick="addPhotoToSighting(${e.id},${s.id})" title="Add photo">+</button>
-      </div>
+    const slides = photos.length
+      ? photos.map((p,i)=>`<div class="spec-carousel-slide"><img src="${esc(p.url)}" alt="${esc(s.name||'')}" loading="lazy"></div>`).join('')
+      : `<div class="spec-carousel-slide"><div class="upload-hint" onclick="addPhotoToSighting(${e.id},${s.id})"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>add photo</div></div>`;
+    const dots = photos.length > 1 ? `<div class="spec-car-dots" id="scd-${e.id}-${s.id}">${photos.map((_,i)=>`<button class="spec-car-dot${i===0?' active':''}"></button>`).join('')}</div>` : '';
+    const navs = photos.length > 1 ? `<button class="spec-car-nav prev">‹</button><button class="spec-car-nav next">›</button>` : '';
+    const carHtml=`<div class="spec-carousel" id="sc-${e.id}-${s.id}">
+      <div class="spec-carousel-track-wrap"><div class="spec-carousel-track" id="sct-${e.id}-${s.id}">${slides}</div>${navs}</div>
+      ${dots}
+      <button class="spec-car-add" onclick="addPhotoToSighting(${e.id},${s.id})">+ add photo</button>
     </div>`;
     return `<div class="specimen">
-      ${galleryHtml}
+      ${carHtml}
       <div class="spec-text">
         <div class="spec-name">${hi(s.name||'',searchQuery)}</div>
         ${s.latin?`<div class="spec-latin">${hi(s.latin,searchQuery)}</div>`:''}
@@ -427,46 +468,128 @@ function entryHTML(e) {
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-/* ── INLINE SIGHTING PHOTO ADD (from card) ── */
-function addPhotoToSighting(entryId, sightingId) {
-  const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.multiple=true;
-  inp.onchange=async()=>{
-    if(!inp.files.length) return;
-    toast('Uploading…');
-    try {
-      const entry=await api('GET','/api/entries/'+entryId);
-      const urls=[];
-      for(const file of inp.files) urls.push(await uploadPhoto(file));
-      entry.specimens=entry.specimens.map(s=>{
-        if(s.id!==sightingId) return s;
-        return {...s, photos:[...(s.photos||[]),...urls.map(u=>({url:u,caption:null}))]};
+/* ── CAROUSEL INIT ── */
+function initCarousels(el, entry) {
+  // Entry-level carousel
+  if (entry.photos && entry.photos.length > 1) {
+    const urls = entry.photos.map(p=>p.url);
+    initCarousel({
+      track: el.querySelector(`#ect-${entry.id}`),
+      dotsEl: el.querySelector(`#ecd-${entry.id}`),
+      prevBtn: el.querySelector(`#ec-${entry.id} .carousel-nav.prev`),
+      nextBtn: el.querySelector(`#ec-${entry.id} .carousel-nav.next`),
+      count: urls.length,
+      onTap: i => openLightbox(urls, i)
+    });
+  } else if (entry.photos && entry.photos.length === 1) {
+    const url = entry.photos[0].url;
+    el.querySelector(`#ect-${entry.id}`)?.querySelector('img')?.addEventListener('click', ()=>openLightbox([url],0));
+  }
+
+  // Specimen carousels
+  (entry.specimens||[]).forEach(s => {
+    const photos = s.photos||[];
+    if (photos.length > 1) {
+      const urls = photos.map(p=>p.url);
+      initCarousel({
+        track: el.querySelector(`#sct-${entry.id}-${s.id}`),
+        dotsEl: el.querySelector(`#scd-${entry.id}-${s.id}`),
+        prevBtn: el.querySelector(`#sc-${entry.id}-${s.id} .spec-car-nav.prev`),
+        nextBtn: el.querySelector(`#sc-${entry.id}-${s.id} .spec-car-nav.next`),
+        count: urls.length,
+        onTap: i => openLightbox(urls, i)
       });
-      await api('PUT','/api/entries/'+entryId,entry);
-      await fetchAndRender();
-      toast('Photo added');
-    } catch(err){ toast('Upload failed'); }
-  };
-  inp.click();
+    } else if (photos.length === 1) {
+      const url = photos[0].url;
+      el.querySelector(`#sct-${entry.id}-${s.id}`)?.querySelector('img')?.addEventListener('click', ()=>openLightbox([url],0));
+    }
+  });
 }
 
-/* ── GALLERY SWITCHER (read-only view) ── */
-function switchGallery(entryId, sightingId, idx, urlsJson) {
-  const urls=typeof urlsJson==='string'?JSON.parse(urlsJson):urlsJson;
-  const main=document.getElementById('gallery-main-'+entryId+'-'+sightingId);
-  if(!main) return;
-  let img=main.querySelector('img');
-  if(!img){ img=document.createElement('img'); img.alt=''; main.innerHTML=''; main.appendChild(img); }
-  img.src=urls[idx];
-  img.onclick=()=>openLightbox(urls,idx);
-  document.querySelectorAll('#gallery-thumbs-'+entryId+'-'+sightingId+' .g-thumb').forEach((t,i)=>t.classList.toggle('active',i===idx));
+function initCarousel({ track, dotsEl, prevBtn, nextBtn, count, onTap }) {
+  if (!track) return;
+  let cur = 0;
+  const dots = dotsEl ? Array.from(dotsEl.querySelectorAll('.carousel-dot, .spec-car-dot')) : [];
+
+  function go(n) {
+    cur = (n + count) % count;
+    track.style.transform = `translateX(-${cur * 100}%)`;
+    dots.forEach((d,i) => d.classList.toggle('active', i===cur));
+  }
+
+  // tap on slide → open lightbox
+  track.querySelectorAll('img').forEach((img, i) => img.addEventListener('click', () => onTap(i)));
+
+  if (prevBtn) prevBtn.addEventListener('click', e => { e.stopPropagation(); go(cur-1); });
+  if (nextBtn) nextBtn.addEventListener('click', e => { e.stopPropagation(); go(cur+1); });
+
+  // swipe support
+  let tx = 0, startX = 0, dragging = false;
+  track.parentElement.addEventListener('touchstart', e => { startX = e.touches[0].clientX; dragging = true; tx = 0; }, {passive:true});
+  track.parentElement.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    tx = e.touches[0].clientX - startX;
+    track.style.transform = `translateX(calc(-${cur*100}% + ${tx}px))`;
+    track.style.transition = 'none';
+  }, {passive:true});
+  track.parentElement.addEventListener('touchend', () => {
+    dragging = false;
+    track.style.transition = '';
+    if (tx < -40) go(cur+1);
+    else if (tx > 40) go(cur-1);
+    else go(cur);
+  }, {passive:true});
 }
 
-/* ── LIGHTBOX ── */
+/* ── INLINE SIGHTING PHOTO ADD ── */
+function addPhotoToSighting(entryId, sightingId) {
+  // On mobile show camera option first
+  if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    const sheet = document.createElement('div');
+    sheet.style.cssText='position:fixed;inset:0;z-index:800;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(0,0,0,0.4)';
+    sheet.innerHTML=`<div style="background:var(--paper-card);border-radius:16px 16px 0 0;padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom));">
+      <label style="display:flex;align-items:center;gap:12px;padding:14px 4px;font-family:Karla,sans-serif;font-size:15px;color:var(--ink-soft);cursor:pointer;border-bottom:0.5px solid var(--rule-light);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Take photo
+        <input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleInlineUpload(${entryId},${sightingId},this.files,true)">
+      </label>
+      <label style="display:flex;align-items:center;gap:12px;padding:14px 4px;font-family:Karla,sans-serif;font-size:15px;color:var(--ink-soft);cursor:pointer;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        Choose from library
+        <input type="file" accept="image/*" multiple style="display:none" onchange="handleInlineUpload(${entryId},${sightingId},this.files,true)">
+      </label>
+      <button style="width:100%;padding:14px;background:none;border:none;font-family:Karla,sans-serif;font-size:15px;color:var(--ink-faint);cursor:pointer;margin-top:4px;" onclick="this.closest('div[style]').remove()">Cancel</button>
+    </div>`;
+    sheet.addEventListener('click', e=>{ if(e.target===sheet) sheet.remove(); });
+    document.body.appendChild(sheet);
+  } else {
+    const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.multiple=true;
+    inp.onchange=()=>handleInlineUpload(entryId,sightingId,inp.files,false);
+    inp.click();
+  }
+}
+
+async function handleInlineUpload(entryId, sightingId, files, removeSheet) {
+  if(removeSheet){ const s=document.querySelector('div[style*="inset:0;z-index:800"]'); if(s) s.remove(); }
+  if(!files||!files.length) return;
+  toast('Uploading…');
+  try {
+    const entry = await api('GET','/api/entries/'+entryId);
+    const urls = [];
+    for (const file of Array.from(files)) urls.push(await uploadPhoto(file));
+    entry.specimens = entry.specimens.map(s => {
+      if (s.id !== sightingId) return s;
+      return {...s, photos:[...(s.photos||[]),...urls.map(u=>({url:u,caption:null}))]};
+    });
+    await api('PUT','/api/entries/'+entryId,entry);
+    await fetchAndRender(); toast('Photo added');
+  } catch(err){ toast('Upload failed'); }
+}
+
+/* ── LIGHTBOX with swipe ── */
 let lbUrls=[], lbIdx=0;
-function openLightbox(urls, idx) {
-  lbUrls=typeof urls==='string'?JSON.parse(urls):urls;
-  lbIdx=idx;
-  showLb();
+function openLightbox(urls, idx){
+  lbUrls=Array.isArray(urls)?urls:JSON.parse(urls); lbIdx=idx; showLb();
   document.getElementById('lightbox').classList.add('open');
   document.onkeydown=e=>{if(e.key==='Escape')closeLightbox();if(e.key==='ArrowLeft')lbNav(-1);if(e.key==='ArrowRight')lbNav(1);};
 }
@@ -474,15 +597,27 @@ function showLb(){
   document.getElementById('lb-img').src=lbUrls[lbIdx];
   document.getElementById('lb-prev').style.display=lbUrls.length>1?'':'none';
   document.getElementById('lb-next').style.display=lbUrls.length>1?'':'none';
+  document.getElementById('lb-counter').textContent=lbUrls.length>1?`${lbIdx+1} / ${lbUrls.length}`:'';
 }
 function lbNav(d){ lbIdx=(lbIdx+d+lbUrls.length)%lbUrls.length; showLb(); }
-function closeLightbox(e){ if(e&&e.target!==document.getElementById('lightbox')&&e.target!==document.getElementById('lb-img')) return; document.getElementById('lightbox').classList.remove('open'); document.onkeydown=null; }
+function closeLightbox(){ document.getElementById('lightbox').classList.remove('open'); document.onkeydown=null; }
+
+// Swipe lightbox
+(()=>{
+  let sx=0, sy=0;
+  const lb = document.getElementById('lightbox');
+  lb.addEventListener('touchstart', e=>{ sx=e.touches[0].clientX; sy=e.touches[0].clientY; },{passive:true});
+  lb.addEventListener('touchend', e=>{
+    const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>40){ lbNav(dx<0?1:-1); return; }
+    if(Math.abs(dy)>80&&dy>0) closeLightbox();
+  },{passive:true});
+})();
 
 async function deleteEntry(id){
   if(!confirm('Remove this entry?')) return;
   await api('DELETE','/api/entries/'+id);
-  toast('Entry deleted');
-  await loadFilters(); await fetchAndRender();
+  toast('Entry deleted'); await loadFilters(); await fetchAndRender();
 }
 
 function renderPagination(total){
@@ -522,7 +657,7 @@ function collectFormData(){
 }
 function checkDraftBanner(){
   const raw=localStorage.getItem(DRAFT_KEY);
-  if(raw){ try{ const d=JSON.parse(raw); if(d&&d.data) document.getElementById('draft-banner').classList.add('visible'); }catch(e){} }
+  if(raw){try{const d=JSON.parse(raw);if(d&&d.data)document.getElementById('draft-banner').classList.add('visible');}catch(e){}}
 }
 function resumeDraft(){ document.getElementById('draft-banner').classList.remove('visible'); openModal(null,true); }
 function discardDraft(bannerOnly){ localStorage.removeItem(DRAFT_KEY); document.getElementById('draft-banner').classList.remove('visible'); if(!bannerOnly) closeModal(); }
@@ -575,17 +710,14 @@ function openModal(id, fromDraft) {
 function closeModal(){ clearTimeout(draftTimer); document.getElementById('modal-bg').classList.remove('open'); editingId=null; }
 function handleBgClick(e){ if(e.target===document.getElementById('modal-bg')) closeModal(); }
 
-/* ── ENTRY-LEVEL PHOTOS ── */
-async function handleEntryPhotos(event) {
+/* ── ENTRY PHOTOS ── */
+async function handleEntryPhotos(event){
   const files=Array.from(event.target.files); if(!files.length) return;
   const spinner=document.getElementById('entry-photo-spinner');
   spinner.classList.add('visible');
   for(const file of files){
-    try{
-      const url=await uploadPhoto(file);
-      addEntryPhotoThumb(url);
-      scheduleDraft();
-    }catch(e){ toast('Upload failed'); }
+    try{ const url=await uploadPhoto(file); addEntryPhotoThumb(url); scheduleDraft(); }
+    catch(e){ toast('Upload failed'); }
   }
   spinner.classList.remove('visible');
   event.target.value='';
@@ -611,25 +743,31 @@ function addSpecimenForm(pre){
     <div class="specimen-form-num">Sighting ${idx}</div>
     <button class="btn-remove-spec" type="button" onclick="removeSpecimenForm(${idx})">✕</button>
     <div class="form-row-2">
-      <div><label class="form-label">Common name</label><input type="text" id="spec-name-${idx}" value="${esc(pre&&pre.name||'')}" placeholder="e.g. Neem" oninput="scheduleDraft()"></div>
-      <div><label class="form-label">Latin name</label><input type="text" id="spec-latin-${idx}" value="${esc(pre&&pre.latin||'')}" placeholder="e.g. Azadirachta indica" oninput="scheduleDraft()"></div>
+      <div><label class="form-label">Common name</label><input type="text" id="spec-name-${idx}" value="${esc(pre&&pre.name||'')}" placeholder="e.g. Neem" oninput="scheduleDraft()" autocorrect="off"></div>
+      <div><label class="form-label">Latin name</label><input type="text" id="spec-latin-${idx}" value="${esc(pre&&pre.latin||'')}" placeholder="e.g. Azadirachta indica" oninput="scheduleDraft()" autocorrect="off"></div>
     </div>
     <div class="form-row"><label class="form-label">Observation notes</label><textarea id="spec-note-${idx}" placeholder="Describe what you saw…" oninput="scheduleDraft()">${esc(pre&&pre.note||'')}</textarea></div>
-    <div class="form-row"><label class="form-label">Tags (comma separated)</label><input type="text" id="spec-tags-${idx}" value="${esc(tagsVal)}" placeholder="e.g. tree, flowering" oninput="scheduleDraft()"></div>
+    <div class="form-row"><label class="form-label">Tags (comma separated)</label><input type="text" id="spec-tags-${idx}" value="${esc(tagsVal)}" placeholder="e.g. tree, flowering" oninput="scheduleDraft()" autocorrect="off"></div>
     <div class="form-row">
       <label class="form-label">Photos</label>
       <div class="photo-picker">
         <div class="photo-picker-thumbs" id="spec-photo-thumbs-${idx}"></div>
-        <button class="photo-picker-add">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="14" height="14" rx="2"/><circle cx="5.5" cy="5.5" r="1.5"/><path d="M15 11l-4-4L5 13"/></svg>
-          Add photos
-          <input type="file" accept="image/*" multiple onchange="handleSpecimenPhotos(${idx},event)">
-        </button>
+        <div class="photo-source-row">
+          <button class="photo-src-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Camera
+            <input type="file" accept="image/*" capture="environment" onchange="handleSpecimenPhotos(${idx},event)">
+          </button>
+          <button class="photo-src-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Library
+            <input type="file" accept="image/*" multiple onchange="handleSpecimenPhotos(${idx},event)">
+          </button>
+        </div>
         <div class="pp-spinner" id="spec-spinner-${idx}">Uploading…</div>
       </div>
     </div>`;
   document.getElementById('specimens-container').appendChild(div);
-  // Populate existing photos
   (div._photos||[]).forEach(p=>addSpecimenPhotoThumb(idx,p.url));
 }
 
@@ -670,12 +808,7 @@ async function saveEntry(){
     const idx=form.id.replace('spec-','');
     const name=document.getElementById('spec-name-'+idx)?.value.trim();
     if(!name) continue;
-    specimens.push({
-      name, latin:document.getElementById('spec-latin-'+idx)?.value.trim()||'',
-      note:document.getElementById('spec-note-'+idx)?.value.trim()||'',
-      tags:(document.getElementById('spec-tags-'+idx)?.value||'').split(',').map(t=>t.trim()).filter(Boolean),
-      photos: form._photos||[]
-    });
+    specimens.push({name,latin:document.getElementById('spec-latin-'+idx)?.value.trim()||'',note:document.getElementById('spec-note-'+idx)?.value.trim()||'',tags:(document.getElementById('spec-tags-'+idx)?.value||'').split(',').map(t=>t.trim()).filter(Boolean),photos:form._photos||[]});
   }
   if(!specimens.length){alert('Add at least one sighting.');return;}
   const btn=document.getElementById('btn-save');
