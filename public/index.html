@@ -370,7 +370,7 @@ async function fetchAndRender() {
   filtered = allEntries;
   document.getElementById('entry-count').textContent = allEntries.length+(allEntries.length===1?' entry':' entries');
   const any=place||month||searchQuery;
-  document.getElementById('filter-results').textContent = any?`${filtered.length} result${filtered.length!==1?'s':''}` : ''
+  document.getElementById('filter-results').textContent = any?`${filtered.length} result${filtered.length!==1?'s':''}` : '';
   document.getElementById('filter-clear-btn').style.display = any?'':'none';
   document.getElementById('filter-place').classList.toggle('active',!!place);
   document.getElementById('filter-month').classList.toggle('active',!!month);
