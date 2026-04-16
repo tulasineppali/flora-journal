@@ -116,6 +116,15 @@ main { max-width: 760px; margin: 0 auto; padding: 1.25rem 1.25rem calc(2rem + va
 .spec-note { font-size: 14px; color: var(--ink-soft); line-height: 1.75; }
 .spec-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
 .spec-tag { font-size: 12px; color: var(--green); background: var(--green-bg); padding: 3px 9px; border-radius: 4px; }
+.spec-edit-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 14px; padding: 6px 12px;
+  background: transparent; border: 0.5px solid var(--rule);
+  border-radius: 5px; cursor: pointer;
+  font-family: 'Karla', sans-serif; font-size: 12px; color: var(--ink-faint);
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.spec-edit-btn:active, .spec-edit-btn:hover { background: var(--rule-light); color: var(--ink-muted); border-color: var(--ink-muted); }
 mark { background: #fef3c7; color: inherit; border-radius: 2px; padding: 0 1px; }
 
 /* LIGHTBOX */
@@ -208,11 +217,22 @@ textarea { min-height: 80px; line-height: 1.65; }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 540px) {
-  .specimen { grid-template-columns: 1fr; }
+  .specimen {
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+  }
   .specimen:nth-child(even) { direction: ltr; }
+  /* text block goes ABOVE photos on mobile */
+  .spec-text { order: -1; padding: 1rem 1rem 0.6rem; }
+  .spec-carousel { order: 0; border-radius: 0 0 0 0; }
   .spec-carousel-track-wrap { aspect-ratio: 3/2; }
   .form-row-2 { grid-template-columns: 1fr; }
   .entry-carousel-slide { aspect-ratio: 4/3; }
+  /* Tighten up spec-text typography on mobile */
+  .spec-name { font-size: 17px; }
+  .spec-latin { font-size: 13px; margin-bottom: 6px; }
+  .spec-note { font-size: 14px; }
 }
 @media (min-width: 541px) {
   .modal-bg { align-items: center; padding: 1rem; }
@@ -459,6 +479,10 @@ function entryHTML(e) {
         ${s.latin?`<div class="spec-latin">${hi(s.latin,searchQuery)}</div>`:''}
         <div class="spec-note">${hi(s.note||'',searchQuery)}</div>
         ${s.tags&&s.tags.length?`<div class="spec-tags">${s.tags.map(t=>`<span class="spec-tag">${hi(t,searchQuery)}</span>`).join('')}</div>`:''}
+        <button class="spec-edit-btn" onclick="editSighting(${e.id},${s.id})">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 2l3 3-9 9H2v-3L11 2z"/></svg>
+          Edit sighting
+        </button>
       </div>
     </div>`;
   }).join('');
@@ -709,6 +733,32 @@ function openModal(id, fromDraft) {
 }
 function closeModal(){ clearTimeout(draftTimer); document.getElementById('modal-bg').classList.remove('open'); editingId=null; }
 function handleBgClick(e){ if(e.target===document.getElementById('modal-bg')) closeModal(); }
+
+/* ── EDIT A SPECIFIC SIGHTING ── */
+function editSighting(entryId, sightingId) {
+  openModal(entryId);
+  // After the entry data loads and forms render, scroll to the target sighting
+  const poll = setInterval(() => {
+    // specimen forms are added async; find the one whose pre-loaded sighting id matches
+    const allForms = document.getElementById('specimens-container').querySelectorAll('.specimen-form');
+    if (!allForms.length) return;
+    // We identify by matching position: fetch entry then map sightingId to form index
+    api('GET', '/api/entries/' + entryId).then(entry => {
+      const idx = (entry.specimens||[]).findIndex(s => s.id === sightingId);
+      if (idx < 0) { clearInterval(poll); return; }
+      const forms = document.getElementById('specimens-container').querySelectorAll('.specimen-form');
+      if (forms.length <= idx) return; // still loading
+      clearInterval(poll);
+      const target = forms[idx];
+      setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+      // Briefly highlight the sighting form
+      target.style.transition = 'box-shadow 0.3s';
+      target.style.boxShadow = '0 0 0 2px var(--amber)';
+      setTimeout(() => { target.style.boxShadow = ''; }, 1400);
+    }).catch(() => clearInterval(poll));
+  }, 120);
+  setTimeout(() => clearInterval(poll), 4000); // safety timeout
+}
 
 /* ── ENTRY PHOTOS ── */
 async function handleEntryPhotos(event){
