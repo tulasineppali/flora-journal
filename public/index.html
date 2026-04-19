@@ -116,15 +116,6 @@ main { max-width: 760px; margin: 0 auto; padding: 1.25rem 1.25rem calc(2rem + va
 .spec-note { font-size: 14px; color: var(--ink-soft); line-height: 1.75; }
 .spec-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
 .spec-tag { font-size: 12px; color: var(--green); background: var(--green-bg); padding: 3px 9px; border-radius: 4px; }
-.spec-edit-btn {
-  display: inline-flex; align-items: center; gap: 5px;
-  margin-top: 14px; padding: 6px 12px;
-  background: transparent; border: 0.5px solid var(--rule);
-  border-radius: 5px; cursor: pointer;
-  font-family: 'Karla', sans-serif; font-size: 12px; color: var(--ink-faint);
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
-}
-.spec-edit-btn:active, .spec-edit-btn:hover { background: var(--rule-light); color: var(--ink-muted); border-color: var(--ink-muted); }
 mark { background: #fef3c7; color: inherit; border-radius: 2px; padding: 0 1px; }
 
 /* LIGHTBOX */
@@ -204,6 +195,19 @@ textarea { min-height: 80px; line-height: 1.65; }
 .btn-add-spec { width: 100%; padding: 13px; border: 1px dashed var(--rule); background: transparent; border-radius: 8px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 15px; color: var(--ink-muted); margin-bottom: 1.25rem; min-height: 48px; }
 .btn-add-spec:active { background: var(--rule-light); }
 
+/* Tag picker */
+.tag-picker { border: 0.5px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--paper); }
+.tag-picker-pills { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 10px 0; }
+.tag-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-family: 'Karla', sans-serif; cursor: pointer; border: 0.5px solid var(--rule); background: var(--paper-card); color: var(--ink-muted); transition: all 0.12s; user-select: none; }
+.tag-pill:hover { border-color: var(--green); color: var(--green); }
+.tag-pill.selected { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 500; }
+.tag-pill.selected::before { content: '✓ '; font-size: 10px; }
+.tag-picker-input-row { display: flex; border-top: 0.5px solid var(--rule-light); margin-top: 8px; }
+.tag-picker-input { flex: 1; background: transparent; border: none; font-family: 'Karla', sans-serif; font-size: 14px; color: var(--ink-soft); padding: 9px 12px; outline: none; }
+.tag-picker-add { padding: 9px 14px; background: none; border: none; border-left: 0.5px solid var(--rule-light); cursor: pointer; font-family: 'Karla', sans-serif; font-size: 13px; color: var(--green); font-weight: 500; white-space: nowrap; }
+.tag-picker-add:active { background: var(--green-bg); }
+.tag-picker-empty { padding: 8px 10px 10px; font-size: 12px; color: var(--ink-faint); }
+
 .modal-footer { display: flex; gap: 10px; padding-top: 1.1rem; border-top: 0.5px solid var(--rule-light); margin-top: 0.5rem; }
 .btn-cancel { flex: 1; padding: 13px; border: 0.5px solid var(--rule); background: transparent; border-radius: 8px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 15px; color: var(--ink-muted); min-height: 50px; }
 .btn-save { flex: 2; padding: 13px; background: var(--ink); color: var(--paper); border: none; border-radius: 8px; cursor: pointer; font-family: 'Karla', sans-serif; font-size: 15px; min-height: 50px; }
@@ -215,53 +219,13 @@ textarea { min-height: 80px; line-height: 1.65; }
 .draft-banner.visible { display: flex; }
 .draft-resume { background: none; border: 0.5px solid var(--amber); border-radius: 4px; padding: 6px 14px; font-family: 'Karla', sans-serif; font-size: 13px; color: var(--amber); cursor: pointer; min-height: 36px; }
 
-/* iNaturalist import panel */
-.inat-panel-bg { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(42,36,22,0.55); align-items: flex-end; justify-content: center; }
-.inat-panel-bg.open { display: flex; }
-.inat-panel {
-  background: var(--paper-card); border-radius: 16px 16px 0 0;
-  width: 100%; max-width: 520px;
-  padding: 0 1.5rem calc(1.5rem + var(--safe-bottom));
-  animation: slideSheet 0.28s ease;
-}
-.inat-logo { display: flex; align-items: center; gap: 10px; }
-.inat-logo-badge { width: 32px; height: 32px; border-radius: 8px; background: #74ac00; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.inat-logo-badge svg { color: #fff; }
-.inat-logo-text { font-family: 'Lora', serif; font-size: 16px; color: var(--ink); }
-.inat-logo-sub { font-size: 12px; color: var(--ink-faint); font-family: 'Karla', sans-serif; }
-.inat-progress { margin-top: 1rem; background: var(--paper); border: 0.5px solid var(--rule); border-radius: 8px; padding: 14px; display: none; }
-.inat-progress.visible { display: block; }
-.inat-progress-bar-wrap { height: 4px; background: var(--rule-light); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
-.inat-progress-bar { height: 100%; background: #74ac00; border-radius: 2px; width: 0%; transition: width 0.4s ease; }
-.inat-progress-msg { font-size: 13px; color: var(--ink-muted); line-height: 1.5; }
-.inat-done { font-size: 14px; color: var(--green); font-weight: 500; margin-top: 4px; }
-.inat-already { font-size: 12px; color: var(--ink-faint); margin-top: 4px; }
-.inat-status-strip { background: var(--paper); border: 0.5px solid var(--rule); border-radius: 8px; padding: 12px 14px; margin-bottom: 1rem; }
-.inat-change-user { background: none; border: 0.5px solid var(--rule); border-radius: 4px; padding: 5px 10px; font-family: 'Karla', sans-serif; font-size: 12px; color: var(--ink-faint); cursor: pointer; white-space: nowrap; }
-.inat-change-user:hover { border-color: var(--ink-muted); color: var(--ink-muted); }
-@media (min-width: 541px) {
-  .inat-panel-bg { align-items: center; padding: 1rem; }
-  .inat-panel { border-radius: 12px; padding: 0 2rem 1.5rem; }
-}
-
 /* ── RESPONSIVE ── */
 @media (max-width: 540px) {
-  .specimen {
-    grid-template-columns: 1fr;
-    display: flex;
-    flex-direction: column;
-  }
+  .specimen { grid-template-columns: 1fr; }
   .specimen:nth-child(even) { direction: ltr; }
-  /* text block goes ABOVE photos on mobile */
-  .spec-text { order: -1; padding: 1rem 1rem 0.6rem; }
-  .spec-carousel { order: 0; border-radius: 0 0 0 0; }
   .spec-carousel-track-wrap { aspect-ratio: 3/2; }
   .form-row-2 { grid-template-columns: 1fr; }
   .entry-carousel-slide { aspect-ratio: 4/3; }
-  /* Tighten up spec-text typography on mobile */
-  .spec-name { font-size: 17px; }
-  .spec-latin { font-size: 13px; margin-bottom: 6px; }
-  .spec-note { font-size: 14px; }
 }
 @media (min-width: 541px) {
   .modal-bg { align-items: center; padding: 1rem; }
@@ -278,9 +242,6 @@ textarea { min-height: 80px; line-height: 1.65; }
     <span class="nav-count" id="entry-count">—</span>
     <button class="btn-icon-nav" id="search-toggle" title="Search" onclick="toggleSearch()">
       <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M13 13l3 3"/></svg>
-    </button>
-    <button class="btn-icon-nav" id="inat-toggle" title="Import from iNaturalist" onclick="openInatPanel()">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4-4-1.79-4-4z"/><path d="M12 6v2M12 16v2M6 12h2M16 12h2"/></svg>
     </button>
     <button class="btn-primary" onclick="openModal(null)">+ New</button>
   </div>
@@ -329,20 +290,25 @@ textarea { min-height: 80px; line-height: 1.65; }
 </div>
 
 <!-- MODAL (bottom sheet on mobile) -->
-<div class="modal-bg" id="modal-bg" onclick="handleBgClick(event)">
+<div class="modal-bg" id="modal-bg">
   <div class="modal" id="modal-inner">
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div class="modal-title" id="modal-title">New entry</div>
-      <div class="draft-status" id="draft-status"></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="draft-status" id="draft-status"></div>
+        <button class="btn-icon" id="modal-close-btn" onclick="closeModal()" title="Close" style="flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l12 12M13 1L1 13"/></svg>
+        </button>
+      </div>
     </div>
     <div class="form-row-2">
-      <div><label class="form-label">Date</label><input type="date" id="f-date" oninput="scheduleDraft()"></div>
-      <div><label class="form-label">Location</label><input type="text" id="f-location" placeholder="e.g. KBR Park" oninput="scheduleDraft()"></div>
+      <div><label class="form-label">Date</label><input type="date" id="f-date" oninput="scheduleDraft();autoSaveEdit()"></div>
+      <div><label class="form-label">Location</label><input type="text" id="f-location" placeholder="e.g. KBR Park" oninput="scheduleDraft();autoSaveEdit()"></div>
     </div>
     <div class="form-row">
       <label class="form-label">Field notes</label>
-      <textarea id="f-outing-note" placeholder="Overall impressions — weather, light, what you noticed…" oninput="scheduleDraft()"></textarea>
+      <textarea id="f-outing-note" placeholder="Overall impressions — weather, light, what you noticed…" oninput="scheduleDraft();autoSaveEdit()"></textarea>
     </div>
     <div class="form-row">
       <label class="form-label">Entry photos</label>
@@ -373,67 +339,6 @@ textarea { min-height: 80px; line-height: 1.65; }
   </div>
 </div>
 
-<!-- iNaturalist sync panel -->
-<div class="inat-panel-bg" id="inat-panel-bg" onclick="handleInatBgClick(event)">
-  <div class="inat-panel">
-    <div class="modal-handle"></div>
-    <div class="modal-header">
-      <div class="inat-logo">
-        <div class="inat-logo-badge">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><circle cx="12" cy="12" r="4"/></svg>
-        </div>
-        <div>
-          <div class="inat-logo-text">iNaturalist Sync</div>
-          <div class="inat-logo-sub" id="inat-subtitle">Keep Flora Journal in sync with your observations</div>
-        </div>
-      </div>
-      <button class="btn-icon" onclick="closeInatPanel()" style="flex-shrink:0">✕</button>
-    </div>
-
-    <!-- Username row -->
-    <div class="form-row" id="inat-username-row">
-      <label class="form-label">Your iNaturalist username</label>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="inat-username" placeholder="e.g. sai_tulasi" autocorrect="off" autocapitalize="off" autocomplete="off" style="flex:1">
-        <button class="btn-save" id="inat-save-user-btn" onclick="saveInatUsername()" style="flex:0 0 auto;padding:11px 16px;font-size:14px;">Save</button>
-      </div>
-    </div>
-
-    <!-- Status strip (shown after username saved) -->
-    <div class="inat-status-strip" id="inat-status-strip" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <div>
-          <div style="font-size:13px;color:var(--ink-soft);">Syncing as <strong id="inat-username-display"></strong></div>
-          <div style="font-size:12px;color:var(--ink-faint);margin-top:2px;" id="inat-last-sync-label">Never synced</div>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <span style="font-size:12px;color:var(--ink-faint);" id="inat-obs-count"></span>
-          <button class="inat-change-user" onclick="showChangeUser()">Change</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Progress -->
-    <div class="inat-progress" id="inat-progress">
-      <div class="inat-progress-bar-wrap"><div class="inat-progress-bar" id="inat-progress-bar"></div></div>
-      <div class="inat-progress-msg" id="inat-progress-msg">Starting…</div>
-    </div>
-
-    <div style="font-size:12px;color:var(--ink-faint);margin:0.75rem 0 1rem;line-height:1.6;" id="inat-hint">
-      Observations are grouped by date. Photos download locally. New observations sync incrementally — only what's changed since last sync.
-    </div>
-
-    <div class="modal-footer" style="margin-top:0;">
-      <button class="btn-cancel" onclick="closeInatPanel()">Close</button>
-      <button class="btn-save" id="inat-sync-btn" onclick="runInatSync()" style="display:none">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        Sync now
-      </button>
-      <button class="btn-save" id="inat-first-sync-btn" onclick="runInatSync()" style="display:none">Import all observations</button>
-    </div>
-  </div>
-</div>
-
 <script>
 const PER_PAGE  = 4;
 const DRAFT_KEY = 'flora-draft-v2';
@@ -459,7 +364,7 @@ async function uploadPhoto(file) {
 }
 
 /* ── LOAD ── */
-async function load() { await loadFilters(); await fetchAndRender(); checkDraftBanner(); loadInatConfig(); }
+async function load() { await loadFilters(); await fetchAndRender(); checkDraftBanner(); }
 
 async function loadFilters() {
   const { places, months } = await api('GET', '/api/filters');
@@ -472,13 +377,15 @@ async function loadFilters() {
   }).join('');
 }
 
-async function fetchAndRender() {
+async function fetchAndRender(restoreScroll) {
   const place=document.getElementById('filter-place').value;
   const month=document.getElementById('filter-month').value;
   const params=new URLSearchParams();
   if(place) params.set('place',place);
   if(month) params.set('month',month);
   if(searchQuery) params.set('search',searchQuery);
+  const savedScroll = restoreScroll ? window.scrollY : 0;
+  const savedPage   = restoreScroll ? currentPage : 1;
   allEntries = await api('GET', '/api/entries'+(params.toString()?'?'+params:''));
   filtered = allEntries;
   document.getElementById('entry-count').textContent = allEntries.length+(allEntries.length===1?' entry':' entries');
@@ -487,7 +394,8 @@ async function fetchAndRender() {
   document.getElementById('filter-clear-btn').style.display = any?'':'none';
   document.getElementById('filter-place').classList.toggle('active',!!place);
   document.getElementById('filter-month').classList.toggle('active',!!month);
-  currentPage=1; renderPage();
+  if(restoreScroll){ currentPage=savedPage; renderPage(); requestAnimationFrame(()=>window.scrollTo({top:savedScroll,behavior:'instant'})); }
+  else { currentPage=1; renderPage(); }
 }
 
 /* ── SEARCH / FILTERS ── */
@@ -572,10 +480,6 @@ function entryHTML(e) {
         ${s.latin?`<div class="spec-latin">${hi(s.latin,searchQuery)}</div>`:''}
         <div class="spec-note">${hi(s.note||'',searchQuery)}</div>
         ${s.tags&&s.tags.length?`<div class="spec-tags">${s.tags.map(t=>`<span class="spec-tag">${hi(t,searchQuery)}</span>`).join('')}</div>`:''}
-        <button class="spec-edit-btn" onclick="editSighting(${e.id},${s.id})">
-          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 2l3 3-9 9H2v-3L11 2z"/></svg>
-          Edit sighting
-        </button>
       </div>
     </div>`;
   }).join('');
@@ -767,7 +671,7 @@ function collectFormData(){
   const specimens=[];
   for(const form of forms){
     const idx=form.id.replace('spec-','');
-    specimens.push({name:document.getElementById('spec-name-'+idx)?.value||'',latin:document.getElementById('spec-latin-'+idx)?.value||'',note:document.getElementById('spec-note-'+idx)?.value||'',tags:document.getElementById('spec-tags-'+idx)?.value||'',photos:form._photos||[]});
+    specimens.push({name:document.getElementById('spec-name-'+idx)?.value||'',latin:document.getElementById('spec-latin-'+idx)?.value||'',note:document.getElementById('spec-note-'+idx)?.value||'',tags:form._selectedTags||[],photos:form._photos||[]});
   }
   if(!date&&!location&&!outingNote&&!entryFormPhotos.length&&!specimens.some(s=>s.name)) return null;
   return {date,location,outingNote,photos:entryFormPhotos,specimens};
@@ -791,67 +695,42 @@ function openModal(id, fromDraft) {
   specimenCount=0;
   const db=document.getElementById('btn-discard');
 
-  if(id){
-    db.style.display='none';
-    api('GET','/api/entries/'+id).then(e=>{
-      document.getElementById('f-date').value=e.date||'';
-      document.getElementById('f-location').value=e.location||'';
-      document.getElementById('f-outing-note').value=e.outingNote||'';
-      (e.photos||[]).forEach(p=>addEntryPhotoThumb(p.url));
-      (e.specimens||[]).forEach(s=>addSpecimenForm(s));
-      if(!(e.specimens||[]).length) addSpecimenForm(null);
-    });
-  } else if(fromDraft){
-    db.style.display='';
-    try{
-      const raw=localStorage.getItem(DRAFT_KEY);
-      if(raw){
-        const d=JSON.parse(raw).data;
-        document.getElementById('f-date').value=d.date||'';
-        document.getElementById('f-location').value=d.location||'';
-        document.getElementById('f-outing-note').value=d.outingNote||'';
-        (d.photos||[]).forEach(p=>addEntryPhotoThumb(p.url));
-        (d.specimens||[]).forEach(s=>addSpecimenForm({name:s.name,latin:s.latin,note:s.note,tags:s.tags?s.tags.split(',').map(t=>t.trim()).filter(Boolean):[],photos:s.photos||[]}));
-        if(!(d.specimens||[]).length) addSpecimenForm(null);
-        document.getElementById('draft-status').textContent='Draft from '+new Date(JSON.parse(raw).savedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-      }
-    }catch(e){ addSpecimenForm(null); }
-  } else {
-    db.style.display=localStorage.getItem(DRAFT_KEY)?'':'none';
-    document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
-    document.getElementById('f-location').value='';
-    document.getElementById('f-outing-note').value='';
-    addSpecimenForm(null);
-  }
+  loadKnownTags().then(()=>{
+    if(id){
+      db.style.display='none';
+      api('GET','/api/entries/'+id).then(e=>{
+        document.getElementById('f-date').value=e.date||'';
+        document.getElementById('f-location').value=e.location||'';
+        document.getElementById('f-outing-note').value=e.outingNote||'';
+        (e.photos||[]).forEach(p=>addEntryPhotoThumb(p.url));
+        (e.specimens||[]).forEach(s=>addSpecimenForm(s));
+        if(!(e.specimens||[]).length) addSpecimenForm(null);
+      });
+    } else if(fromDraft){
+      db.style.display='';
+      try{
+        const raw=localStorage.getItem(DRAFT_KEY);
+        if(raw){
+          const d=JSON.parse(raw).data;
+          document.getElementById('f-date').value=d.date||'';
+          document.getElementById('f-location').value=d.location||'';
+          document.getElementById('f-outing-note').value=d.outingNote||'';
+          (d.photos||[]).forEach(p=>addEntryPhotoThumb(p.url));
+          (d.specimens||[]).forEach(s=>addSpecimenForm({name:s.name,latin:s.latin,note:s.note,tags:Array.isArray(s.tags)?s.tags:(s.tags||'').split(',').map(t=>t.trim()).filter(Boolean),photos:s.photos||[]}));
+          if(!(d.specimens||[]).length) addSpecimenForm(null);
+          document.getElementById('draft-status').textContent='Draft from '+new Date(JSON.parse(raw).savedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+        }
+      }catch(e){ addSpecimenForm(null); }
+    } else {
+      db.style.display=localStorage.getItem(DRAFT_KEY)?'':'none';
+      document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+      document.getElementById('f-location').value='';
+      document.getElementById('f-outing-note').value='';
+      addSpecimenForm(null);
+    }
+  });
 }
-function closeModal(){ clearTimeout(draftTimer); document.getElementById('modal-bg').classList.remove('open'); editingId=null; }
-function handleBgClick(e){ if(e.target===document.getElementById('modal-bg')) closeModal(); }
-
-/* ── EDIT A SPECIFIC SIGHTING ── */
-function editSighting(entryId, sightingId) {
-  openModal(entryId);
-  // After the entry data loads and forms render, scroll to the target sighting
-  const poll = setInterval(() => {
-    // specimen forms are added async; find the one whose pre-loaded sighting id matches
-    const allForms = document.getElementById('specimens-container').querySelectorAll('.specimen-form');
-    if (!allForms.length) return;
-    // We identify by matching position: fetch entry then map sightingId to form index
-    api('GET', '/api/entries/' + entryId).then(entry => {
-      const idx = (entry.specimens||[]).findIndex(s => s.id === sightingId);
-      if (idx < 0) { clearInterval(poll); return; }
-      const forms = document.getElementById('specimens-container').querySelectorAll('.specimen-form');
-      if (forms.length <= idx) return; // still loading
-      clearInterval(poll);
-      const target = forms[idx];
-      setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
-      // Briefly highlight the sighting form
-      target.style.transition = 'box-shadow 0.3s';
-      target.style.boxShadow = '0 0 0 2px var(--amber)';
-      setTimeout(() => { target.style.boxShadow = ''; }, 1400);
-    }).catch(() => clearInterval(poll));
-  }, 120);
-  setTimeout(() => clearInterval(poll), 4000); // safety timeout
-}
+function closeModal(){ clearTimeout(draftTimer); clearTimeout(autoSaveTimer); document.getElementById('modal-bg').classList.remove('open'); editingId=null; }
 
 /* ── ENTRY PHOTOS ── */
 async function handleEntryPhotos(event){
@@ -881,16 +760,29 @@ function addSpecimenForm(pre){
   const idx=specimenCount, div=document.createElement('div');
   div.className='specimen-form'; div.id='spec-'+idx;
   div._photos=pre&&pre.photos?[...pre.photos]:[];
-  const tagsVal=pre&&pre.tags?(Array.isArray(pre.tags)?pre.tags.join(', '):pre.tags):'';
+  // Normalise pre-existing tags to array
+  const preTags=pre&&pre.tags?(Array.isArray(pre.tags)?pre.tags:pre.tags.split(',').map(t=>t.trim()).filter(Boolean)):[];
+  div._selectedTags=[...preTags];
+
   div.innerHTML=`
     <div class="specimen-form-num">Sighting ${idx}</div>
     <button class="btn-remove-spec" type="button" onclick="removeSpecimenForm(${idx})">✕</button>
     <div class="form-row-2">
-      <div><label class="form-label">Common name</label><input type="text" id="spec-name-${idx}" value="${esc(pre&&pre.name||'')}" placeholder="e.g. Neem" oninput="scheduleDraft()" autocorrect="off"></div>
-      <div><label class="form-label">Latin name</label><input type="text" id="spec-latin-${idx}" value="${esc(pre&&pre.latin||'')}" placeholder="e.g. Azadirachta indica" oninput="scheduleDraft()" autocorrect="off"></div>
+      <div><label class="form-label">Common name</label><input type="text" id="spec-name-${idx}" value="${esc(pre&&pre.name||'')}" placeholder="e.g. Neem" oninput="scheduleDraft();autoSaveEdit()" autocorrect="off"></div>
+      <div><label class="form-label">Latin name</label><input type="text" id="spec-latin-${idx}" value="${esc(pre&&pre.latin||'')}" placeholder="e.g. Azadirachta indica" oninput="scheduleDraft();autoSaveEdit()" autocorrect="off"></div>
     </div>
-    <div class="form-row"><label class="form-label">Observation notes</label><textarea id="spec-note-${idx}" placeholder="Describe what you saw…" oninput="scheduleDraft()">${esc(pre&&pre.note||'')}</textarea></div>
-    <div class="form-row"><label class="form-label">Tags (comma separated)</label><input type="text" id="spec-tags-${idx}" value="${esc(tagsVal)}" placeholder="e.g. tree, flowering" oninput="scheduleDraft()" autocorrect="off"></div>
+    <div class="form-row"><label class="form-label">Observation notes</label><textarea id="spec-note-${idx}" placeholder="Describe what you saw…" oninput="scheduleDraft();autoSaveEdit()">${esc(pre&&pre.note||'')}</textarea></div>
+    <div class="form-row">
+      <label class="form-label">Tags</label>
+      <div class="tag-picker" id="tag-picker-${idx}">
+        <div class="tag-picker-pills" id="tag-pills-${idx}"></div>
+        <div class="tag-picker-input-row">
+          <input class="tag-picker-input" id="tag-input-${idx}" placeholder="Add a new tag…" autocorrect="off" autocapitalize="off"
+            onkeydown="handleTagKey(${idx},event)">
+          <button class="tag-picker-add" type="button" onclick="addCustomTag(${idx})">+ Add</button>
+        </div>
+      </div>
+    </div>
     <div class="form-row">
       <label class="form-label">Photos</label>
       <div class="photo-picker">
@@ -912,6 +804,64 @@ function addSpecimenForm(pre){
     </div>`;
   document.getElementById('specimens-container').appendChild(div);
   (div._photos||[]).forEach(p=>addSpecimenPhotoThumb(idx,p.url));
+  renderTagPicker(idx);
+}
+
+/* ── TAG PICKER ── */
+// knownTags is loaded once per modal open
+let knownTags = [];
+async function loadKnownTags(){
+  try{ knownTags=await api('GET','/api/tags'); }catch(_){ knownTags=[]; }
+}
+
+function renderTagPicker(idx){
+  const form=document.getElementById('spec-'+idx); if(!form) return;
+  const pillsEl=document.getElementById('tag-pills-'+idx); if(!pillsEl) return;
+  const selected=form._selectedTags||[];
+
+  // Merge knownTags with any selected tags that aren't in knownTags yet
+  const allTags=[...new Set([...knownTags,...selected])].sort();
+
+  pillsEl.innerHTML='';
+  if(!allTags.length){
+    pillsEl.innerHTML='<span class="tag-picker-empty">No existing tags — type below to add.</span>';
+    return;
+  }
+  allTags.forEach(tag=>{
+    const pill=document.createElement('button');
+    pill.type='button';
+    pill.className='tag-pill'+(selected.includes(tag)?' selected':'');
+    pill.textContent=tag;
+    pill.onclick=()=>toggleTag(idx,tag,pill);
+    pillsEl.appendChild(pill);
+  });
+}
+
+function toggleTag(idx, tag, pillEl){
+  const form=document.getElementById('spec-'+idx); if(!form) return;
+  const sel=form._selectedTags;
+  const i=sel.indexOf(tag);
+  if(i>=0){ sel.splice(i,1); pillEl.classList.remove('selected'); }
+  else { sel.push(tag); pillEl.classList.add('selected'); }
+  scheduleDraft(); autoSaveEdit();
+}
+
+function handleTagKey(idx, e){
+  if(e.key==='Enter'||e.key===','){ e.preventDefault(); addCustomTag(idx); }
+}
+
+function addCustomTag(idx){
+  const inp=document.getElementById('tag-input-'+idx); if(!inp) return;
+  const val=inp.value.trim().toLowerCase().replace(/,/g,'');
+  if(!val) return;
+  const form=document.getElementById('spec-'+idx); if(!form) return;
+  // Add to knownTags pool if new
+  if(!knownTags.includes(val)) knownTags=[...knownTags,val].sort();
+  // Select it
+  if(!form._selectedTags.includes(val)) form._selectedTags.push(val);
+  inp.value='';
+  renderTagPicker(idx);
+  scheduleDraft(); autoSaveEdit();
 }
 
 function removeSpecimenForm(idx){ const el=document.getElementById('spec-'+idx); if(el) el.remove(); }
@@ -941,7 +891,7 @@ async function handleSpecimenPhotos(idx, event){
 }
 
 /* ── SAVE ── */
-async function saveEntry(){
+function collectPayload(){
   const date=document.getElementById('f-date').value;
   const location=document.getElementById('f-location').value.trim();
   const outingNote=document.getElementById('f-outing-note').value.trim();
@@ -951,231 +901,44 @@ async function saveEntry(){
     const idx=form.id.replace('spec-','');
     const name=document.getElementById('spec-name-'+idx)?.value.trim();
     if(!name) continue;
-    specimens.push({name,latin:document.getElementById('spec-latin-'+idx)?.value.trim()||'',note:document.getElementById('spec-note-'+idx)?.value.trim()||'',tags:(document.getElementById('spec-tags-'+idx)?.value||'').split(',').map(t=>t.trim()).filter(Boolean),photos:form._photos||[]});
+    const selTags=(form._selectedTags||[]);
+    specimens.push({name,latin:document.getElementById('spec-latin-'+idx)?.value.trim()||'',note:document.getElementById('spec-note-'+idx)?.value.trim()||'',tags:selTags,photos:form._photos||[]});
   }
-  if(!specimens.length){alert('Add at least one sighting.');return;}
+  return {date,location,outingNote,photos:entryFormPhotos,specimens};
+}
+
+async function saveEntry(){
+  const payload=collectPayload();
+  if(!payload.specimens.length){alert('Add at least one sighting.');return;}
   const btn=document.getElementById('btn-save');
   btn.disabled=true; btn.textContent='Saving…';
   try{
-    const payload={date,location,outingNote,photos:entryFormPhotos,specimens};
     if(editingId) await api('PUT','/api/entries/'+editingId,payload);
     else{ await api('POST','/api/entries',payload); localStorage.removeItem(DRAFT_KEY); document.getElementById('draft-banner').classList.remove('visible'); }
     toast(editingId?'Entry updated':'Entry saved');
-    await loadFilters(); await fetchAndRender(); closeModal();
+    await loadFilters(); await fetchAndRender(!!editingId); closeModal();
   }catch(e){ alert('Save failed: '+e.message); }
   btn.disabled=false; btn.textContent='Save entry';
+}
+
+/* Auto-save for edits (debounced, silent) */
+let autoSaveTimer=null;
+async function autoSaveEdit(){
+  if(!editingId) return;
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer=setTimeout(async()=>{
+    const payload=collectPayload();
+    if(!payload.specimens.length) return;
+    try{
+      await api('PUT','/api/entries/'+editingId,payload);
+      document.getElementById('draft-status').textContent='Saved '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    }catch(_){}
+  },1800);
 }
 
 /* ── TOAST ── */
 let toastTimer;
 function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2500); }
-
-/* ── iNATURALIST LIVE SYNC ── */
-let inatConfig = { username: '', lastSync: null, importedCount: 0 };
-
-async function loadInatConfig() {
-  try {
-    inatConfig = await api('GET', '/api/inaturalist/config');
-    updateInatNavBtn();
-  } catch (_) {}
-}
-
-function updateInatNavBtn() {
-  // Show a green dot on the nav button if username is configured
-  const btn = document.getElementById('inat-toggle');
-  if (inatConfig.username) {
-    btn.style.borderColor = '#74ac00';
-    btn.title = `iNaturalist: ${inatConfig.username}`;
-  } else {
-    btn.style.borderColor = '';
-    btn.title = 'Import from iNaturalist';
-  }
-}
-
-function openInatPanel() {
-  document.getElementById('inat-panel-bg').classList.add('open');
-  document.getElementById('inat-progress').classList.remove('visible');
-  renderInatPanel();
-}
-
-function renderInatPanel() {
-  const usernameRow   = document.getElementById('inat-username-row');
-  const statusStrip   = document.getElementById('inat-status-strip');
-  const syncBtn       = document.getElementById('inat-sync-btn');
-  const firstSyncBtn  = document.getElementById('inat-first-sync-btn');
-  const progressEl    = document.getElementById('inat-progress');
-  const bar           = document.getElementById('inat-progress-bar');
-
-  bar.style.background = '#74ac00'; // reset error colour
-  progressEl.classList.remove('visible');
-
-  if (inatConfig.username) {
-    // Username already saved — show status strip
-    usernameRow.style.display = 'none';
-    statusStrip.style.display = 'block';
-    document.getElementById('inat-username').value = inatConfig.username;
-    document.getElementById('inat-username-display').textContent = inatConfig.username;
-    document.getElementById('inat-obs-count').textContent =
-      inatConfig.importedCount ? `${inatConfig.importedCount} sighting${inatConfig.importedCount !== 1 ? 's' : ''} synced` : '';
-
-    if (inatConfig.lastSync) {
-      const d = new Date(inatConfig.lastSync);
-      document.getElementById('inat-last-sync-label').textContent =
-        'Last synced ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) +
-        ' at ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      firstSyncBtn.style.display = 'none';
-      syncBtn.style.display = '';
-      syncBtn.disabled = false;
-      syncBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Sync now`;
-    } else {
-      // Username saved but never synced
-      firstSyncBtn.style.display = '';
-      firstSyncBtn.disabled = false;
-      firstSyncBtn.textContent = 'Import all observations';
-      syncBtn.style.display = 'none';
-      document.getElementById('inat-last-sync-label').textContent = 'Never synced';
-    }
-  } else {
-    // No username yet
-    usernameRow.style.display = 'block';
-    statusStrip.style.display = 'none';
-    syncBtn.style.display = 'none';
-    firstSyncBtn.style.display = 'none';
-    setTimeout(() => document.getElementById('inat-username').focus(), 300);
-  }
-}
-
-async function saveInatUsername() {
-  const username = document.getElementById('inat-username').value.trim();
-  if (!username) { toast('Enter your iNaturalist username'); return; }
-  const btn = document.getElementById('inat-save-user-btn');
-  btn.disabled = true; btn.textContent = 'Saving…';
-  try {
-    await api('POST', '/api/inaturalist/config', { username });
-    inatConfig.username = username;
-    updateInatNavBtn();
-    renderInatPanel();
-  } catch (e) { toast('Could not save username'); }
-  btn.disabled = false; btn.textContent = 'Save';
-}
-
-function showChangeUser() {
-  document.getElementById('inat-status-strip').style.display = 'none';
-  document.getElementById('inat-username-row').style.display = 'block';
-  document.getElementById('inat-sync-btn').style.display = 'none';
-  document.getElementById('inat-first-sync-btn').style.display = 'none';
-  setTimeout(() => document.getElementById('inat-username').focus(), 50);
-}
-
-function closeInatPanel() {
-  document.getElementById('inat-panel-bg').classList.remove('open');
-}
-function handleInatBgClick(e) {
-  if (e.target === document.getElementById('inat-panel-bg')) closeInatPanel();
-}
-
-async function runInatSync() {
-  const username = inatConfig.username || document.getElementById('inat-username').value.trim();
-  if (!username) { toast('Enter your iNaturalist username first'); return; }
-
-  const syncBtn      = document.getElementById('inat-sync-btn');
-  const firstSyncBtn = document.getElementById('inat-first-sync-btn');
-  const progress     = document.getElementById('inat-progress');
-  const bar          = document.getElementById('inat-progress-bar');
-  const msg          = document.getElementById('inat-progress-msg');
-
-  syncBtn.disabled = true;
-  firstSyncBtn.disabled = true;
-  syncBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;animation:spin 1s linear infinite"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Syncing…`;
-
-  progress.classList.add('visible');
-  bar.style.width = '5%';
-  bar.style.background = '#74ac00';
-  msg.textContent = 'Connecting to iNaturalist…';
-
-  // Add spin animation if not present
-  if (!document.getElementById('spin-style')) {
-    const s = document.createElement('style');
-    s.id = 'spin-style';
-    s.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
-    document.head.appendChild(s);
-  }
-
-  try {
-    const response = await fetch('/api/inaturalist/sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username })
-    });
-
-    const reader  = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        try {
-          const evt = JSON.parse(line);
-          msg.textContent = evt.message || '';
-
-          if (evt.status === 'fetching') {
-            const pct = evt.total ? Math.min(15 + Math.round((evt.fetched / evt.total) * 15), 30) : 15;
-            bar.style.width = pct + '%';
-          } else if (evt.status === 'processing') {
-            const pct = evt.total ? Math.min(30 + Math.round((evt.done / evt.total) * 65), 95) : 50;
-            bar.style.width = pct + '%';
-          } else if (evt.status === 'done') {
-            bar.style.width = '100%';
-            msg.innerHTML = `<span class="inat-done">${evt.message}</span>` +
-              (evt.skipped ? `<br><span class="inat-already">${evt.skipped} duplicate${evt.skipped !== 1 ? 's' : ''} skipped.</span>` : '');
-
-            // Update local config
-            inatConfig.lastSync = evt.lastSync;
-            inatConfig.importedCount = (inatConfig.importedCount || 0) + (evt.imported || 0);
-            updateInatNavBtn();
-
-            // Update the last-sync label live
-            if (evt.lastSync) {
-              const d = new Date(evt.lastSync);
-              document.getElementById('inat-last-sync-label').textContent =
-                'Last synced ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) +
-                ' at ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-              document.getElementById('inat-obs-count').textContent =
-                inatConfig.importedCount ? `${inatConfig.importedCount} sighting${inatConfig.importedCount !== 1 ? 's' : ''} synced` : '';
-              firstSyncBtn.style.display = 'none';
-              syncBtn.style.display = '';
-            }
-
-            syncBtn.disabled = false;
-            syncBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Sync now`;
-            firstSyncBtn.disabled = false;
-
-            if (evt.imported > 0) {
-              await loadFilters(); await fetchAndRender();
-              toast(`iNaturalist: ${evt.imported} new sighting${evt.imported !== 1 ? 's' : ''} synced!`);
-            }
-          } else if (evt.status === 'error') {
-            bar.style.background = 'var(--red)';
-            msg.innerHTML = `<span style="color:var(--red)">${evt.message}</span>`;
-            syncBtn.disabled = false; firstSyncBtn.disabled = false;
-            syncBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Retry`;
-          }
-        } catch (_) {}
-      }
-    }
-  } catch (err) {
-    bar.style.background = 'var(--red)';
-    msg.innerHTML = `<span style="color:var(--red)">Connection error: ${err.message}</span>`;
-    syncBtn.disabled = false; firstSyncBtn.disabled = false;
-  }
-}
 
 load();
 </script>
