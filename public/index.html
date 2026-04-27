@@ -227,11 +227,26 @@ textarea { min-height: 80px; line-height: 1.65; }
   .form-row-2 { grid-template-columns: 1fr; }
   .entry-carousel-slide { aspect-ratio: 4/3; }
 }
-@media (min-width: 541px) {
-  .modal-bg { align-items: center; padding: 1rem; }
-  .modal { border-radius: 12px; max-height: 90dvh; padding: 0 2rem calc(1.5rem); }
-  .modal-handle { display: none; }
-}
+/* iNaturalist sync panel */
+.inat-panel-bg { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(42,36,22,0.55); align-items: flex-end; justify-content: center; }
+.inat-panel-bg.open { display: flex; }
+.inat-panel { background: var(--paper-card); border-radius: 16px 16px 0 0; width: 100%; max-width: 520px; padding: 0 1.5rem calc(1.5rem + var(--safe-bottom)); animation: slideSheet 0.28s ease; }
+.inat-logo { display: flex; align-items: center; gap: 10px; }
+.inat-logo-badge { width: 32px; height: 32px; border-radius: 8px; background: #74ac00; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.inat-logo-badge svg { color: #fff; }
+.inat-logo-text { font-family: 'Lora', serif; font-size: 16px; color: var(--ink); }
+.inat-logo-sub { font-size: 12px; color: var(--ink-faint); font-family: 'Karla', sans-serif; }
+.inat-progress { margin-top: 1rem; background: var(--paper); border: 0.5px solid var(--rule); border-radius: 8px; padding: 14px; display: none; }
+.inat-progress.visible { display: block; }
+.inat-progress-bar-wrap { height: 4px; background: var(--rule-light); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+.inat-progress-bar { height: 100%; background: #74ac00; border-radius: 2px; width: 0%; transition: width 0.4s ease; }
+.inat-progress-msg { font-size: 13px; color: var(--ink-muted); line-height: 1.5; }
+.inat-done { font-size: 14px; color: var(--green); font-weight: 500; }
+.inat-already { font-size: 12px; color: var(--ink-faint); margin-top: 4px; }
+.inat-status-strip { background: var(--paper); border: 0.5px solid var(--rule); border-radius: 8px; padding: 12px 14px; margin-bottom: 1rem; }
+.inat-change-user { background: none; border: 0.5px solid var(--rule); border-radius: 4px; padding: 5px 10px; font-family: 'Karla', sans-serif; font-size: 12px; color: var(--ink-faint); cursor: pointer; white-space: nowrap; }
+.inat-change-user:hover { border-color: var(--ink-muted); color: var(--ink-muted); }
+@media (min-width: 541px) { .inat-panel-bg { align-items: center; padding: 1rem; } .inat-panel { border-radius: 12px; padding: 0 2rem 1.5rem; } }
 </style>
 </head>
 <body>
@@ -242,6 +257,9 @@ textarea { min-height: 80px; line-height: 1.65; }
     <span class="nav-count" id="entry-count">—</span>
     <button class="btn-icon-nav" id="search-toggle" title="Search" onclick="toggleSearch()">
       <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M13 13l3 3"/></svg>
+    </button>
+    <button class="btn-icon-nav" id="inat-toggle" title="Import from iNaturalist" onclick="openInatPanel()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><circle cx="12" cy="12" r="4"/><path d="M12 6v2M12 16v2M6 12h2M16 12h2"/></svg>
     </button>
     <button class="btn-primary" onclick="openModal(null)">+ New</button>
   </div>
@@ -339,6 +357,63 @@ textarea { min-height: 80px; line-height: 1.65; }
   </div>
 </div>
 
+<!-- iNaturalist sync panel -->
+<div class="inat-panel-bg" id="inat-panel-bg">
+  <div class="inat-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="inat-logo">
+        <div class="inat-logo-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><circle cx="12" cy="12" r="4"/></svg>
+        </div>
+        <div>
+          <div class="inat-logo-text">iNaturalist Sync</div>
+          <div class="inat-logo-sub" id="inat-subtitle">Keep Flora Journal in sync with your observations</div>
+        </div>
+      </div>
+      <button class="btn-icon" onclick="closeInatPanel()" style="flex-shrink:0">✕</button>
+    </div>
+
+    <div class="form-row" id="inat-username-row">
+      <label class="form-label">Your iNaturalist username</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="inat-username" placeholder="e.g. sai_tulasi" autocorrect="off" autocapitalize="off" autocomplete="off" style="flex:1">
+        <button class="btn-save" id="inat-save-user-btn" onclick="saveInatUsername()" style="flex:0 0 auto;padding:11px 16px;font-size:14px;">Save</button>
+      </div>
+    </div>
+
+    <div class="inat-status-strip" id="inat-status-strip" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:13px;color:var(--ink-soft);">Syncing as <strong id="inat-username-display"></strong></div>
+          <div style="font-size:12px;color:var(--ink-faint);margin-top:2px;" id="inat-last-sync-label">Never synced</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:12px;color:var(--ink-faint);" id="inat-obs-count"></span>
+          <button class="inat-change-user" onclick="showChangeUser()">Change</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="inat-progress" id="inat-progress">
+      <div class="inat-progress-bar-wrap"><div class="inat-progress-bar" id="inat-progress-bar"></div></div>
+      <div class="inat-progress-msg" id="inat-progress-msg">Starting…</div>
+    </div>
+
+    <div style="font-size:12px;color:var(--ink-faint);margin:0.75rem 0 1rem;line-height:1.6;">
+      Observations are grouped by date. Photos download locally. Only new observations are fetched on each sync.
+    </div>
+
+    <div class="modal-footer" style="margin-top:0;">
+      <button class="btn-cancel" onclick="closeInatPanel()">Close</button>
+      <button class="btn-save" id="inat-sync-btn" onclick="runInatSync()" style="display:none">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Sync now
+      </button>
+      <button class="btn-save" id="inat-first-sync-btn" onclick="runInatSync()" style="display:none">Import all observations</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const PER_PAGE  = 4;
 const DRAFT_KEY = 'flora-draft-v2';
@@ -364,7 +439,172 @@ async function uploadPhoto(file) {
 }
 
 /* ── LOAD ── */
-async function load() { await loadFilters(); await fetchAndRender(); checkDraftBanner(); }
+/* ── iNATURALIST LIVE SYNC ── */
+let inatConfig = { username: '', lastSync: null, importedCount: 0 };
+
+async function loadInatConfig() {
+  try { inatConfig = await api('GET', '/api/inaturalist/config'); updateInatNavBtn(); } catch (_) {}
+}
+
+function updateInatNavBtn() {
+  const btn = document.getElementById('inat-toggle');
+  if (!btn) return;
+  btn.style.borderColor = inatConfig.username ? '#74ac00' : '';
+  btn.title = inatConfig.username ? `iNaturalist: ${inatConfig.username}` : 'Import from iNaturalist';
+}
+
+function openInatPanel() {
+  document.getElementById('inat-panel-bg').classList.add('open');
+  document.getElementById('inat-progress').classList.remove('visible');
+  renderInatPanel();
+}
+
+function renderInatPanel() {
+  const usernameRow  = document.getElementById('inat-username-row');
+  const statusStrip  = document.getElementById('inat-status-strip');
+  const syncBtn      = document.getElementById('inat-sync-btn');
+  const firstSyncBtn = document.getElementById('inat-first-sync-btn');
+  const bar          = document.getElementById('inat-progress-bar');
+  bar.style.background = '#74ac00';
+  document.getElementById('inat-progress').classList.remove('visible');
+
+  if (inatConfig.username) {
+    usernameRow.style.display = 'none';
+    statusStrip.style.display = 'block';
+    document.getElementById('inat-username').value = inatConfig.username;
+    document.getElementById('inat-username-display').textContent = inatConfig.username;
+    document.getElementById('inat-obs-count').textContent = inatConfig.importedCount
+      ? `${inatConfig.importedCount} sighting${inatConfig.importedCount !== 1 ? 's' : ''} synced` : '';
+    if (inatConfig.lastSync) {
+      const d = new Date(inatConfig.lastSync);
+      document.getElementById('inat-last-sync-label').textContent =
+        'Last synced ' + d.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) +
+        ' at ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      firstSyncBtn.style.display = 'none';
+      syncBtn.style.display = '';
+      syncBtn.disabled = false;
+      syncBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Sync now';
+    } else {
+      firstSyncBtn.style.display = '';
+      firstSyncBtn.disabled = false;
+      firstSyncBtn.textContent = 'Import all observations';
+      syncBtn.style.display = 'none';
+      document.getElementById('inat-last-sync-label').textContent = 'Never synced';
+    }
+  } else {
+    usernameRow.style.display = 'block';
+    statusStrip.style.display = 'none';
+    syncBtn.style.display = 'none';
+    firstSyncBtn.style.display = 'none';
+    setTimeout(() => document.getElementById('inat-username').focus(), 300);
+  }
+}
+
+async function saveInatUsername() {
+  const username = document.getElementById('inat-username').value.trim();
+  if (!username) { toast('Enter your iNaturalist username'); return; }
+  const btn = document.getElementById('inat-save-user-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    await api('POST', '/api/inaturalist/config', { username });
+    inatConfig.username = username;
+    updateInatNavBtn();
+    renderInatPanel();
+  } catch (e) { toast('Could not save username'); }
+  btn.disabled = false; btn.textContent = 'Save';
+}
+
+function showChangeUser() {
+  document.getElementById('inat-status-strip').style.display = 'none';
+  document.getElementById('inat-username-row').style.display = 'block';
+  document.getElementById('inat-sync-btn').style.display = 'none';
+  document.getElementById('inat-first-sync-btn').style.display = 'none';
+  setTimeout(() => document.getElementById('inat-username').focus(), 50);
+}
+
+function closeInatPanel() { document.getElementById('inat-panel-bg').classList.remove('open'); }
+
+async function runInatSync() {
+  const username = inatConfig.username || document.getElementById('inat-username').value.trim();
+  if (!username) { toast('Enter your iNaturalist username first'); return; }
+
+  const syncBtn      = document.getElementById('inat-sync-btn');
+  const firstSyncBtn = document.getElementById('inat-first-sync-btn');
+  const progress     = document.getElementById('inat-progress');
+  const bar          = document.getElementById('inat-progress-bar');
+  const msg          = document.getElementById('inat-progress-msg');
+
+  syncBtn.disabled = true; firstSyncBtn.disabled = true;
+  syncBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle;animation:inatSpin 1s linear infinite"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Syncing…';
+  progress.classList.add('visible');
+  bar.style.width = '5%'; bar.style.background = '#74ac00';
+  msg.textContent = 'Connecting to iNaturalist…';
+
+  if (!document.getElementById('inat-spin-style')) {
+    const s = document.createElement('style'); s.id = 'inat-spin-style';
+    s.textContent = '@keyframes inatSpin { to { transform: rotate(360deg); } }';
+    document.head.appendChild(s);
+  }
+
+  try {
+    const response = await fetch('/api/inaturalist/sync', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ username })
+    });
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n'); buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const evt = JSON.parse(line);
+          msg.textContent = evt.message || '';
+          if (evt.status === 'fetching') {
+            bar.style.width = evt.total ? Math.min(15 + Math.round((evt.fetched/evt.total)*15), 30)+'%' : '15%';
+          } else if (evt.status === 'processing') {
+            bar.style.width = evt.total ? Math.min(30 + Math.round((evt.done/evt.total)*65), 95)+'%' : '50%';
+          } else if (evt.status === 'done') {
+            bar.style.width = '100%';
+            msg.innerHTML = `<span class="inat-done">${evt.message}</span>` +
+              (evt.skipped ? `<br><span class="inat-already">${evt.skipped} duplicate${evt.skipped!==1?'s':''} skipped.</span>` : '');
+            inatConfig.lastSync = evt.lastSync;
+            inatConfig.importedCount = (inatConfig.importedCount||0) + (evt.imported||0);
+            updateInatNavBtn();
+            if (evt.lastSync) {
+              const d = new Date(evt.lastSync);
+              document.getElementById('inat-last-sync-label').textContent =
+                'Last synced ' + d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) +
+                ' at ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+              document.getElementById('inat-obs-count').textContent = inatConfig.importedCount
+                ? `${inatConfig.importedCount} sighting${inatConfig.importedCount!==1?'s':''} synced` : '';
+              firstSyncBtn.style.display = 'none'; syncBtn.style.display = '';
+            }
+            syncBtn.disabled = false; firstSyncBtn.disabled = false;
+            syncBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Sync now';
+            if (evt.imported > 0) { await loadFilters(); await fetchAndRender(); toast(`iNaturalist: ${evt.imported} new sighting${evt.imported!==1?'s':''} synced!`); }
+          } else if (evt.status === 'error') {
+            bar.style.background = 'var(--red)';
+            msg.innerHTML = `<span style="color:var(--red)">${evt.message}</span>`;
+            syncBtn.disabled = false; firstSyncBtn.disabled = false;
+            syncBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Retry';
+          }
+        } catch (_) {}
+      }
+    }
+  } catch (err) {
+    bar.style.background = 'var(--red)';
+    msg.innerHTML = `<span style="color:var(--red)">Connection error: ${err.message}</span>`;
+    syncBtn.disabled = false; firstSyncBtn.disabled = false;
+  }
+}
+
+async function load() { await loadFilters(); await fetchAndRender(); checkDraftBanner(); loadInatConfig(); }
 
 async function loadFilters() {
   const { places, months } = await api('GET', '/api/filters');
