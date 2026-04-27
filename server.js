@@ -234,14 +234,6 @@ app.delete('/api/upload', (req, res) => {
   res.json({ ok: true });
 });
 
-// ── All tags (for multiselect picker) ───────────────────────
-app.get('/api/tags', (_req, res) => {
-  const rows = db.prepare('SELECT tags FROM sightings WHERE tags IS NOT NULL AND tags != ""').all();
-  const tagSet = new Set();
-  rows.forEach(r => r.tags.split(',').forEach(t => { const s=t.trim(); if(s) tagSet.add(s); }));
-  res.json([...tagSet].sort());
-});
-
 // ── Filters ──────────────────────────────────────────────────
 app.get('/api/filters', (_req, res) => {
   const places = db.prepare(
@@ -285,7 +277,220 @@ function deleteFile(url) {
   try { fs.unlinkSync(path.join(UPLOADS_DIR, filename)); } catch (_) {}
 }
 
+// ── All tags (for multiselect picker) ───────────────────────
+app.get('/api/tags', (_req, res) => {
+  const rows = db.prepare('SELECT tags FROM sightings WHERE tags IS NOT NULL AND tags != ""').all();
+  const tagSet = new Set();
+  rows.forEach(r => r.tags.split(',').forEach(t => { const s = t.trim(); if (s) tagSet.add(s); }));
+  res.json([...tagSet].sort());
+});
+
+// ── iNaturalist live sync ─────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS inat_imports (
+    inat_id     INTEGER PRIMARY KEY,
+    entry_id    INTEGER REFERENCES entries(id) ON DELETE CASCADE,
+    sighting_id INTEGER,
+    imported_at TEXT DEFAULT (datetime('now'))
+  );
+  CREATE TABLE IF NOT EXISTS inat_config (
+    key   TEXT PRIMARY KEY,
+    value TEXT
+  );
+`);
+
+try {
+  const cols = db.prepare("PRAGMA table_info(inat_imports)").all().map(c => c.name);
+  if (!cols.includes('sighting_id')) db.exec('ALTER TABLE inat_imports ADD COLUMN sighting_id INTEGER');
+} catch (_) {}
+
+const https = require('https');
+
+function getConfig(key) {
+  const row = db.prepare('SELECT value FROM inat_config WHERE key = ?').get(key);
+  return row ? row.value : null;
+}
+function setConfig(key, value) {
+  db.prepare('INSERT OR REPLACE INTO inat_config (key, value) VALUES (?, ?)').run(key, value);
+}
+
+function httpsGet(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, { headers: { 'User-Agent': 'FloraJournal/1.0' } }, res => {
+      const chunks = [];
+      res.on('data', c => chunks.push(c));
+      res.on('end', () => {
+        try {
+          const body = Buffer.concat(chunks).toString();
+          if (res.statusCode === 429) return reject(new Error('iNaturalist rate limit — wait a minute and try again'));
+          if (res.statusCode >= 400) return reject(new Error(`iNaturalist returned ${res.statusCode}`));
+          resolve(JSON.parse(body));
+        } catch (e) { reject(e); }
+      });
+    }).on('error', reject);
+  });
+}
+
+function downloadPhoto(url) {
+  return new Promise((resolve) => {
+    const photoUrl = url.replace('/square.', '/large.').replace('/medium.', '/large.');
+    const ext = (photoUrl.match(/\.(jpe?g|png|gif|webp)/i) || ['', '.jpg'])[0];
+    const filename = Date.now() + '-' + Math.floor(Math.random() * 1e6) + ext;
+    const dest = path.join(UPLOADS_DIR, filename);
+    const file = fs.createWriteStream(dest);
+    https.get(photoUrl, { headers: { 'User-Agent': 'FloraJournal/1.0' } }, res => {
+      if (res.statusCode !== 200) { file.close(); fs.unlink(dest, () => {}); return resolve(null); }
+      res.pipe(file);
+      file.on('finish', () => { file.close(); resolve('/uploads/' + filename); });
+    }).on('error', () => { file.close(); fs.unlink(dest, () => {}); resolve(null); });
+  });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function fetchObservationsSince(username, sinceDate, send) {
+  let page = 1, perPage = 200, allObs = [], totalResults = null;
+  while (true) {
+    let url = `https://api.inaturalist.org/v1/observations?user_login=${encodeURIComponent(username)}&per_page=${perPage}&page=${page}&order=asc&order_by=id`;
+    if (sinceDate) url += `&updated_since=${encodeURIComponent(sinceDate)}`;
+    const data = await httpsGet(url);
+    if (!data.results) break;
+    if (totalResults === null) totalResults = data.total_results;
+    allObs = allObs.concat(data.results);
+    if (send) send({ status: 'fetching', message: `Fetched ${allObs.length} of ${totalResults} observations…`, total: totalResults, fetched: allObs.length });
+    if (allObs.length >= totalResults || !data.results.length) break;
+    page++;
+    await sleep(1100);
+  }
+  return allObs;
+}
+
+async function processObservations(newObs, send) {
+  if (!newObs.length) return { importedSightings: 0, importedEntries: 0 };
+  const alreadyImported = new Set(db.prepare('SELECT inat_id FROM inat_imports').all().map(r => r.inat_id));
+  const brandNew = newObs.filter(o => !alreadyImported.has(o.id));
+  if (!brandNew.length) return { importedSightings: 0, importedEntries: 0 };
+  if (send) send({ status: 'processing', message: `Processing ${brandNew.length} new observation${brandNew.length !== 1 ? 's' : ''}…`, newCount: brandNew.length });
+
+  const byDate = {};
+  for (const obs of brandNew) {
+    const date = obs.observed_on || obs.time_observed_at?.split('T')[0] || obs.created_at?.split('T')[0] || 'unknown';
+    if (!byDate[date]) byDate[date] = [];
+    byDate[date].push(obs);
+  }
+
+  const insEntry    = db.prepare('INSERT INTO entries (date, location, outing_note) VALUES (?, ?, ?)');
+  const insSighting = db.prepare('INSERT INTO sightings (entry_id, position, name, latin, note, tags) VALUES (?, ?, ?, ?, ?, ?)');
+  const insPhoto    = db.prepare('INSERT INTO photos (sighting_id, position, url, caption) VALUES (?, ?, ?, ?)');
+  const insInat     = db.prepare('INSERT OR REPLACE INTO inat_imports (inat_id, entry_id, sighting_id) VALUES (?, ?, ?)');
+
+  let importedSightings = 0, importedEntries = 0;
+  for (const date of Object.keys(byDate).sort()) {
+    const group = byDate[date];
+    const existingRow = db.prepare(`SELECT DISTINCT e.id FROM entries e JOIN inat_imports ii ON ii.entry_id = e.id WHERE e.date = ? LIMIT 1`).get(date);
+    let entryId;
+    if (existingRow) {
+      entryId = existingRow.id;
+    } else {
+      const loc = (group.find(o => o.place_guess) || group[0])?.place_guess || null;
+      entryId = insEntry.run(date, loc, `Synced from iNaturalist — ${group.length} observation${group.length !== 1 ? 's' : ''}.`).lastInsertRowid;
+      importedEntries++;
+    }
+    const posOffset = db.prepare('SELECT COUNT(*) as n FROM sightings WHERE entry_id = ?').get(entryId).n;
+    for (let i = 0; i < group.length; i++) {
+      const obs   = group[i];
+      const name  = obs.taxon?.preferred_common_name || obs.taxon?.name || obs.species_guess || 'Unknown';
+      const latin = obs.taxon?.name || null;
+      const tags  = [obs.taxon?.iconic_taxon_name?.toLowerCase(), obs.quality_grade === 'research' ? 'research grade' : obs.quality_grade, obs.captive_cultivated ? 'cultivated' : null].filter(Boolean).join(',');
+      const { lastInsertRowid: sid } = insSighting.run(entryId, posOffset + i, name, latin, obs.description || null, tags || null);
+      insInat.run(obs.id, entryId, sid);
+      const photos = (obs.photos || []).slice(0, 3);
+      for (let pi = 0; pi < photos.length; pi++) {
+        const rawUrl = photos[pi]?.url; if (!rawUrl) continue;
+        const localUrl = await downloadPhoto(rawUrl);
+        if (localUrl) insPhoto.run(sid, pi, localUrl, null);
+        await sleep(150);
+      }
+      importedSightings++;
+      if (send && importedSightings % 5 === 0) send({ status: 'processing', message: `Importing… ${importedSightings}/${brandNew.length} sightings`, done: importedSightings, total: brandNew.length });
+    }
+  }
+  return { importedSightings, importedEntries };
+}
+
+app.get('/api/inaturalist/config', (_req, res) => {
+  const username      = getConfig('inat_username') || '';
+  const lastSync      = getConfig('inat_last_sync') || null;
+  const importedCount = db.prepare('SELECT COUNT(*) as n FROM inat_imports').get().n;
+  res.json({ username, lastSync, importedCount });
+});
+
+app.post('/api/inaturalist/config', (req, res) => {
+  const { username } = req.body;
+  if (!username) return res.status(400).json({ error: 'username required' });
+  setConfig('inat_username', username.trim());
+  res.json({ ok: true });
+});
+
+app.post('/api/inaturalist/sync', async (req, res) => {
+  const username = req.body?.username || getConfig('inat_username');
+  if (!username) return res.status(400).json({ error: 'No iNaturalist username configured' });
+  setConfig('inat_username', username.trim());
+
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Transfer-Encoding', 'chunked');
+  res.setHeader('X-Accel-Buffering', 'no');
+  const send = obj => { try { res.write(JSON.stringify(obj) + '\n'); } catch (_) {} };
+  const syncStartedAt = new Date().toISOString();
+
+  try {
+    const lastSync = getConfig('inat_last_sync');
+    send({
+      status: 'fetching',
+      message: lastSync
+        ? `Checking for new observations since ${new Date(lastSync).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}…`
+        : 'First sync — fetching all your observations from iNaturalist…'
+    });
+    const observations = await fetchObservationsSince(username, lastSync, send);
+    if (!observations.length) {
+      setConfig('inat_last_sync', syncStartedAt);
+      send({ status: 'done', imported: 0, entries: 0, message: '✓ Already up to date — no new observations.', lastSync: syncStartedAt });
+      return res.end();
+    }
+    const { importedSightings, importedEntries } = await processObservations(observations, send);
+    setConfig('inat_last_sync', syncStartedAt);
+    send({
+      status: 'done',
+      imported: importedSightings,
+      entries: importedEntries,
+      skipped: observations.length - importedSightings,
+      lastSync: syncStartedAt,
+      message: importedSightings > 0
+        ? `✓ Synced ${importedSightings} new sighting${importedSightings !== 1 ? 's' : ''} across ${importedEntries} journal entr${importedEntries !== 1 ? 'ies' : 'y'}.`
+        : '✓ Already up to date — no new observations.'
+    });
+    res.end();
+  } catch (err) {
+    send({ status: 'error', message: err.message });
+    res.end();
+  }
+});
+
+app.post('/api/inaturalist/reset', (_req, res) => {
+  setConfig('inat_last_sync', null);
+  db.prepare('DELETE FROM inat_imports').run();
+  res.json({ ok: true });
+});
+
 // ── Start ─────────────────────────────────────────────────────
+// Pre-seed last sync date if user has already manually imported up to a point
+{
+  const existing = db.prepare("SELECT value FROM inat_config WHERE key = 'inat_last_sync'").get();
+  if (!existing) {
+    db.prepare("INSERT OR IGNORE INTO inat_config (key, value) VALUES ('inat_last_sync', '2025-04-10T23:59:59.000Z')").run();
+    console.log('ℹ️  iNaturalist: last sync pre-seeded to April 10, 2025. Next sync will only fetch newer observations.');
+  }
+}
 app.listen(PORT, () => {
   console.log(`\n🌿  Flora Journal → http://localhost:${PORT}\n   Press Ctrl+C to stop\n`);
 });
