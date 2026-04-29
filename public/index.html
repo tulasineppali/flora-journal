@@ -135,6 +135,9 @@ mark { background: #fef3c7; color: inherit; border-radius: 2px; padding: 0 1px; 
 .page-btn:active { background: var(--rule-light); }
 .page-btn.current { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .page-btn:disabled { opacity: 0.3; cursor: default; }
+.page-ellipsis { letter-spacing: 2px; min-width: 36px; }
+.page-ellipsis:hover { background: var(--amber-bg); border-color: var(--amber); color: var(--amber); }
+.page-jump-input { width: 58px; height: 44px; padding: 0 8px; font-size: 14px; border: 0.5px solid var(--amber); border-radius: 6px; background: var(--paper); color: var(--ink); font-family: 'Karla', sans-serif; text-align: center; outline: none; }
 .page-info { font-size: 13px; color: var(--ink-faint); padding: 0 4px; }
 
 .empty-state { text-align: center; padding: 4rem 1rem; color: var(--ink-faint); }
@@ -246,6 +249,67 @@ textarea { min-height: 80px; line-height: 1.65; }
 .inat-status-strip { background: var(--paper); border: 0.5px solid var(--rule); border-radius: 8px; padding: 12px 14px; margin-bottom: 1rem; }
 .inat-change-user { background: none; border: 0.5px solid var(--rule); border-radius: 4px; padding: 5px 10px; font-family: 'Karla', sans-serif; font-size: 12px; color: var(--ink-faint); cursor: pointer; white-space: nowrap; }
 .inat-change-user:hover { border-color: var(--ink-muted); color: var(--ink-muted); }
+/* ── SUMMARY PAGE ── */
+#summary-page { display: none; max-width: 760px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+#summary-page.visible { display: block; }
+.sum-section { margin-bottom: 2.5rem; }
+.sum-section-title { font-family: 'Lora', serif; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 1rem; padding-bottom: 6px; border-bottom: 0.5px solid var(--rule); }
+.sum-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.sum-stat { background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 10px; padding: 14px 16px; }
+.sum-stat-val { font-family: 'Lora', serif; font-size: 32px; color: var(--ink); line-height: 1; margin-bottom: 4px; }
+.sum-stat-label { font-size: 12px; color: var(--ink-faint); line-height: 1.4; }
+.sum-stat.accent { background: var(--green-bg); border-color: var(--green); }
+.sum-stat.accent .sum-stat-val { color: var(--green); }
+.sum-stat.amber { background: var(--amber-bg); border-color: var(--amber); }
+.sum-stat.amber .sum-stat-val { color: var(--amber); }
+
+/* Bar chart */
+.sum-bar-chart { display: flex; flex-direction: column; gap: 8px; }
+.sum-bar-row { display: flex; align-items: center; gap: 10px; }
+.sum-bar-label { font-size: 13px; color: var(--ink-soft); width: 120px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sum-bar-label.wide { width: 160px; }
+.sum-bar-wrap { flex: 1; height: 22px; background: var(--rule-light); border-radius: 4px; overflow: hidden; }
+.sum-bar-fill { height: 100%; border-radius: 4px; background: var(--green); transition: width 0.6s ease; }
+.sum-bar-fill.amber { background: var(--amber); }
+.sum-bar-fill.muted { background: var(--ink-faint); opacity: 0.5; }
+.sum-bar-count { font-size: 12px; color: var(--ink-faint); width: 28px; text-align: right; flex-shrink: 0; }
+
+/* Tag cloud */
+.sum-tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+.sum-tag { padding: 5px 12px; border-radius: 20px; font-family: 'Karla', sans-serif; font-weight: 500; line-height: 1; cursor: default; transition: transform 0.1s; }
+.sum-tag:hover { transform: scale(1.06); }
+
+/* Activity calendar strip */
+.sum-month-chart { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; }
+.sum-month-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.sum-month-bar { width: 28px; border-radius: 3px 3px 0 0; background: var(--green); min-height: 4px; transition: height 0.5s ease; }
+.sum-month-lbl { font-size: 10px; color: var(--ink-faint); text-align: center; }
+
+/* Season wheel (simple flex) */
+.sum-seasons { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
+.sum-season { background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 10px; padding: 12px 8px; text-align: center; }
+.sum-season-icon { font-size: 22px; margin-bottom: 4px; }
+.sum-season-name { font-size: 11px; color: var(--ink-faint); }
+.sum-season-count { font-family: 'Lora', serif; font-size: 20px; color: var(--ink); }
+
+/* DOW chart */
+.sum-dow { display: flex; gap: 6px; align-items: flex-end; height: 80px; }
+.sum-dow-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.sum-dow-bar { width: 100%; border-radius: 3px 3px 0 0; background: var(--amber); }
+.sum-dow-lbl { font-size: 10px; color: var(--ink-faint); }
+
+/* Milestone ribbon */
+.sum-milestone { background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; }
+.sum-milestone-icon { font-size: 28px; flex-shrink: 0; }
+.sum-milestone-text { font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
+.sum-milestone-text strong { color: var(--ink); }
+
+@media (max-width: 540px) {
+  .sum-grid { grid-template-columns: repeat(2, 1fr); }
+  .sum-seasons { grid-template-columns: repeat(3, 1fr); }
+  .sum-bar-label { width: 90px; }
+  .sum-bar-label.wide { width: 110px; }
+}
 @media (min-width: 541px) { .inat-panel-bg { align-items: center; padding: 1rem; } .inat-panel { border-radius: 12px; padding: 0 2rem 1.5rem; } }
 </style>
 </head>
@@ -255,6 +319,9 @@ textarea { min-height: 80px; line-height: 1.65; }
   <div class="nav-title">Flora Journal</div>
   <div class="nav-right">
     <span class="nav-count" id="entry-count">—</span>
+    <button class="btn-icon-nav" id="summary-toggle" title="Summary" onclick="toggleSummary()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 17.5h7M17.5 14v7"/></svg>
+    </button>
     <button class="btn-icon-nav" id="search-toggle" title="Search" onclick="toggleSearch()">
       <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M13 13l3 3"/></svg>
     </button>
@@ -293,6 +360,10 @@ textarea { min-height: 80px; line-height: 1.65; }
   <div class="entries" id="entries-list"><div class="empty-state"><p>Loading your journal…</p></div></div>
   <div class="pagination" id="pagination"></div>
 </main>
+
+<div id="summary-page">
+  <div id="summary-content"></div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -587,7 +658,7 @@ async function runInatSync() {
             }
             syncBtn.disabled = false; firstSyncBtn.disabled = false;
             syncBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Sync now';
-            if (evt.imported > 0) { await loadFilters(); await fetchAndRender(); toast(`iNaturalist: ${evt.imported} new sighting${evt.imported!==1?'s':''} synced!`); }
+            if (evt.imported > 0) { await loadFilters(); await fetchAndRender(true); toast(`iNaturalist: ${evt.imported} new sighting${evt.imported!==1?'s':''} synced!`); }
           } else if (evt.status === 'error') {
             bar.style.background = 'var(--red)';
             msg.innerHTML = `<span style="color:var(--red)">${evt.message}</span>`;
@@ -843,7 +914,7 @@ async function handleInlineUpload(entryId, sightingId, files, removeSheet) {
       return {...s, photos:[...(s.photos||[]),...urls.map(u=>({url:u,caption:null}))]};
     });
     await api('PUT','/api/entries/'+entryId,entry);
-    await fetchAndRender(); toast('Photo added');
+    await fetchAndRender(true); toast('Photo added');
   } catch(err){ toast('Upload failed'); }
 }
 
@@ -878,23 +949,55 @@ function closeLightbox(){ document.getElementById('lightbox').classList.remove('
 async function deleteEntry(id){
   if(!confirm('Remove this entry?')) return;
   await api('DELETE','/api/entries/'+id);
-  toast('Entry deleted'); await loadFilters(); await fetchAndRender();
+  toast('Entry deleted'); await loadFilters(); await fetchAndRender(true);
 }
 
 function renderPagination(total){
   const pg=document.getElementById('pagination');
   if(total<=1){pg.innerHTML='';return;}
-  const start=(currentPage-1)*PER_PAGE+1,end=Math.min(currentPage*PER_PAGE,filtered.length);
+  const start=(currentPage-1)*PER_PAGE+1, end=Math.min(currentPage*PER_PAGE,filtered.length);
+
+  // Always show: 1,2, currentPage-1,currentPage,currentPage+1, total-1,total
+  const show=new Set([1,2,currentPage-1,currentPage,currentPage+1,total-1,total].filter(p=>p>=1&&p<=total));
+  const pages=[...show].sort((a,b)=>a-b);
+
   let h=`<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>←</button>`;
-  for(let i=1;i<=total;i++){
-    if(total>7&&i>2&&i<total-1&&Math.abs(i-currentPage)>1){if(i===3||i===total-2)h+=`<span class="page-info">…</span>`;continue;}
-    h+=`<button class="page-btn${i===currentPage?' current':''}" onclick="goPage(${i})">${i}</button>`;
+  let prev=0;
+  for(const p of pages){
+    if(p-prev===2){
+      // Only one page skipped — just show it
+      h+=`<button class="page-btn" onclick="goPage(${p-1})">${p-1}</button>`;
+    } else if(p-prev>2){
+      // Gap — clickable ellipsis opens jump input
+      h+=`<button class="page-btn page-ellipsis" onclick="openPageJump(this,${prev+1},${p-1})" title="Click to jump…">…</button>`;
+    }
+    h+=`<button class="page-btn${p===currentPage?' current':''}" onclick="goPage(${p})">${p}</button>`;
+    prev=p;
   }
   h+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>→</button>`;
   h+=`<span class="page-info">${start}–${end} of ${filtered.length}</span>`;
   pg.innerHTML=h;
 }
-function goPage(p){currentPage=p;renderPage();window.scrollTo({top:0,behavior:'smooth'});}
+
+function openPageJump(btn, min, max){
+  const inp=document.createElement('input');
+  inp.type='number'; inp.min=min; inp.max=max;
+  inp.className='page-jump-input';
+  inp.placeholder=`${min}–${max}`;
+  inp.onkeydown=e=>{
+    if(e.key==='Enter'){ const v=parseInt(inp.value); if(v>=min&&v<=max) goPage(v); else inp.select(); }
+    if(e.key==='Escape') renderPagination(Math.ceil(filtered.length/PER_PAGE));
+  };
+  inp.onblur=()=>setTimeout(()=>renderPagination(Math.ceil(filtered.length/PER_PAGE)),200);
+  btn.replaceWith(inp);
+  inp.focus();
+}
+
+function goPage(p){
+  const total=Math.ceil(filtered.length/PER_PAGE);
+  if(p<1||p>total) return;
+  currentPage=p; renderPage(); window.scrollTo({top:0,behavior:'smooth'});
+}
 
 /* ── DRAFT ── */
 function scheduleDraft(){ if(editingId) return; clearTimeout(draftTimer); draftTimer=setTimeout(saveDraft,1500); }
@@ -1156,7 +1259,7 @@ async function saveEntry(){
     if(editingId) await api('PUT','/api/entries/'+editingId,payload);
     else{ await api('POST','/api/entries',payload); localStorage.removeItem(DRAFT_KEY); document.getElementById('draft-banner').classList.remove('visible'); }
     toast(editingId?'Entry updated':'Entry saved');
-    await loadFilters(); await fetchAndRender(!!editingId); closeModal();
+    await loadFilters(); await fetchAndRender(true); closeModal();
   }catch(e){ alert('Save failed: '+e.message); }
   btn.disabled=false; btn.textContent='Save entry';
 }
@@ -1179,6 +1282,162 @@ async function autoSaveEdit(){
 /* ── TOAST ── */
 let toastTimer;
 function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2500); }
+
+/* ── SUMMARY ── */
+let summaryVisible = false;
+
+function toggleSummary() {
+  summaryVisible = !summaryVisible;
+  const page    = document.getElementById('summary-page');
+  const main    = document.querySelector('main');
+  const filters = document.querySelector('.filter-bar');
+  const search  = document.getElementById('search-bar');
+  const btn     = document.getElementById('summary-toggle');
+  if (summaryVisible) {
+    page.classList.add('visible');
+    main.style.display = 'none';
+    filters.style.display = 'none';
+    search.style.display = 'none';
+    btn.style.color = 'var(--green)';
+    renderSummary();
+  } else {
+    page.classList.remove('visible');
+    main.style.display = '';
+    filters.style.display = '';
+    search.style.display = '';
+    btn.style.color = '';
+  }
+}
+
+async function renderSummary() {
+  const el = document.getElementById('summary-content');
+  el.innerHTML = '<div class="empty-state"><p>Crunching your data…</p></div>';
+  const d = await api('GET', '/api/summary');
+  if (d.empty) { el.innerHTML = '<div class="empty-state"><p>No journal entries yet.</p></div>'; return; }
+
+  const fmt = date => new Date(date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  const fmtMonth = m => { const [y,mo]=m.split('-'); return new Date(y,mo-1,1).toLocaleDateString('en-GB',{month:'short',year:'2-digit'}); };
+
+  const momentum = d.last30>d.prior30?'↑':d.last30<d.prior30?'↓':'→';
+  const momentumColor = d.last30>d.prior30?'var(--green)':d.last30<d.prior30?'#d06050':'var(--ink-faint)';
+
+  const maxMonth = Math.max(...d.monthlyArr.map(m=>m.count),1);
+  const monthBars = d.monthlyArr.map(m=>`
+    <div class="sum-month-col">
+      <div class="sum-month-bar" style="height:${Math.max(4,Math.round((m.count/maxMonth)*80))}px" title="${fmtMonth(m.month)}: ${m.count}"></div>
+      <div class="sum-month-lbl">${fmtMonth(m.month)}</div>
+    </div>`).join('');
+
+  const maxSp = d.topSpecies[0]?.count||1;
+  const speciesBars = d.topSpecies.map(s=>`
+    <div class="sum-bar-row">
+      <div class="sum-bar-label wide" title="${s.name}">${s.name}</div>
+      <div class="sum-bar-wrap"><div class="sum-bar-fill" style="width:${Math.round(s.count/maxSp*100)}%"></div></div>
+      <div class="sum-bar-count">${s.count}</div>
+    </div>`).join('');
+
+  const maxLoc = d.topLocations[0]?.count||1;
+  const locationBars = d.topLocations.map(l=>`
+    <div class="sum-bar-row">
+      <div class="sum-bar-label wide" title="${l.name}">${l.name}</div>
+      <div class="sum-bar-wrap"><div class="sum-bar-fill amber" style="width:${Math.round(l.count/maxLoc*100)}%"></div></div>
+      <div class="sum-bar-count">${l.count}</div>
+    </div>`).join('');
+
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const maxDow=Math.max(...days.map(d2=>d.dowCount[d2]||0),1);
+  const dowBars=days.map(day=>`
+    <div class="sum-dow-col">
+      <div class="sum-dow-bar" style="height:${Math.max(3,Math.round((d.dowCount[day]||0)/maxDow*60))}px" title="${day}: ${d.dowCount[day]||0}"></div>
+      <div class="sum-dow-lbl">${day}</div>
+    </div>`).join('');
+
+  const maxTag=d.tagCloud[0]?.count||1;
+  const greens=['#3a7a32','#5a9a50','#4a6a40','#2a6a28','#6aaa60'];
+  const ambers=['#b87010','#d09030','#c86820','#e0a020'];
+  const tagPills=d.tagCloud.map((t,i)=>{
+    const size=11+Math.round((t.count/maxTag)*12);
+    const col=(i%3===0)?greens[i%greens.length]:ambers[i%ambers.length];
+    return `<span class="sum-tag" style="font-size:${size}px;background:${col}18;color:${col};border:0.5px solid ${col}44">${t.tag} <span style="opacity:0.55;font-size:${size-2}px">${t.count}</span></span>`;
+  }).join('');
+
+  const seasonIcons={Spring:'🌸',Summer:'☀️',Monsoon:'🌧️',Autumn:'🍂',Winter:'❄️'};
+  const seasonCards=Object.entries(d.seasons).map(([name,count])=>`
+    <div class="sum-season">
+      <div class="sum-season-icon">${seasonIcons[name]}</div>
+      <div class="sum-season-count">${count}</div>
+      <div class="sum-season-name">${name}</div>
+    </div>`).join('');
+
+  const milestones=[];
+  if(d.maxStreak>1) milestones.push({icon:'🔥',text:`Longest streak: <strong>${d.maxStreak} consecutive days</strong> in the field`});
+  if(d.rareSightings>0) milestones.push({icon:'🔍',text:`<strong>${d.rareSightings} species</strong> seen only once — rare encounters`});
+  if(d.bestEntry) milestones.push({icon:'🏆',text:`Best outing: <strong>${d.bestEntry.count} sightings</strong> on ${fmt(d.bestEntry.date)}${d.bestEntry.location?' at '+d.bestEntry.location:''}`});
+  milestones.push({icon:'📸',text:`<strong>${d.totalPhotos}</strong> photos across ${d.totalSightings} sightings — ${(d.totalPhotos/Math.max(d.totalSightings,1)).toFixed(1)} per sighting on average`});
+  if(d.last30!==d.prior30) milestones.push({icon:d.last30>d.prior30?'📈':'📉',text:`Activity last 30 days: <strong>${d.last30} entries</strong> (${d.last30>d.prior30?'+':''}${d.last30-d.prior30} vs prior month)`});
+
+  el.innerHTML=`
+    <div class="sum-section">
+      <div class="sum-section-title">At a glance</div>
+      <div class="sum-grid">
+        <div class="sum-stat accent"><div class="sum-stat-val">${d.totalEntries}</div><div class="sum-stat-label">Journal entries</div></div>
+        <div class="sum-stat accent"><div class="sum-stat-val">${d.uniqueSpecies}</div><div class="sum-stat-label">Species recorded</div></div>
+        <div class="sum-stat"><div class="sum-stat-val">${d.totalSightings}</div><div class="sum-stat-label">Total sightings</div></div>
+        <div class="sum-stat"><div class="sum-stat-val">${d.totalPhotos}</div><div class="sum-stat-label">Photos taken</div></div>
+        <div class="sum-stat"><div class="sum-stat-val">${d.uniqueDays}</div><div class="sum-stat-label">Days in the field</div></div>
+        <div class="sum-stat"><div class="sum-stat-val">${d.avgSightings}</div><div class="sum-stat-label">Avg sightings per outing</div></div>
+        <div class="sum-stat amber"><div class="sum-stat-val">${d.last30} <span style="font-size:20px;color:${momentumColor}">${momentum}</span></div><div class="sum-stat-label">Entries last 30 days</div></div>
+        <div class="sum-stat"><div class="sum-stat-val">${d.maxStreak}</div><div class="sum-stat-label">Longest streak (days)</div></div>
+      </div>
+    </div>
+
+    <div class="sum-section">
+      <div class="sum-section-title">Your journey</div>
+      <div class="sum-grid" style="grid-template-columns:1fr 1fr">
+        <div class="sum-stat"><div class="sum-stat-val" style="font-size:17px">${d.firstEntry?fmt(d.firstEntry.date):'—'}</div><div class="sum-stat-label">First entry${d.firstEntry?.location?'<br><span style="color:var(--ink-soft)">'+d.firstEntry.location+'</span>':''}</div></div>
+        <div class="sum-stat"><div class="sum-stat-val" style="font-size:17px">${d.lastEntry?fmt(d.lastEntry.date):'—'}</div><div class="sum-stat-label">Latest entry${d.lastEntry?.location?'<br><span style="color:var(--ink-soft)">'+d.lastEntry.location+'</span>':''}</div></div>
+      </div>
+    </div>
+
+    ${d.monthlyArr.length>1?`
+    <div class="sum-section">
+      <div class="sum-section-title">Activity over time</div>
+      <div class="sum-month-chart">${monthBars}</div>
+    </div>`:''}
+
+    <div class="sum-section">
+      <div class="sum-section-title">When you go out</div>
+      <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;">
+        <div><div style="font-size:12px;color:var(--ink-faint);margin-bottom:8px">Day of week</div><div class="sum-dow">${dowBars}</div></div>
+        <div style="flex:1;min-width:200px"><div style="font-size:12px;color:var(--ink-faint);margin-bottom:8px">Season</div><div class="sum-seasons">${seasonCards}</div></div>
+      </div>
+    </div>
+
+    ${d.topSpecies.length?`
+    <div class="sum-section">
+      <div class="sum-section-title">Most observed species</div>
+      <div class="sum-bar-chart">${speciesBars}</div>
+    </div>`:''}
+
+    ${d.topLocations.length?`
+    <div class="sum-section">
+      <div class="sum-section-title">Favourite places</div>
+      <div class="sum-bar-chart">${locationBars}</div>
+    </div>`:''}
+
+    ${d.tagCloud.length?`
+    <div class="sum-section">
+      <div class="sum-section-title">What you've been observing</div>
+      <div class="sum-tag-cloud">${tagPills}</div>
+    </div>`:''}
+
+    <div class="sum-section">
+      <div class="sum-section-title">Highlights</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${milestones.map(m=>`<div class="sum-milestone"><div class="sum-milestone-icon">${m.icon}</div><div class="sum-milestone-text">${m.text}</div></div>`).join('')}
+      </div>
+    </div>`;
+}
 
 load();
 </script>

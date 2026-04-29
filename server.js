@@ -482,12 +482,114 @@ app.post('/api/inaturalist/reset', (_req, res) => {
   res.json({ ok: true });
 });
 
+// ── Summary stats ────────────────────────────────────────────
+app.get('/api/summary', (_req, res) => {
+  const entries   = db.prepare('SELECT * FROM entries ORDER BY date ASC').all();
+  const sightings = db.prepare('SELECT * FROM sightings').all();
+  const photos    = db.prepare('SELECT * FROM photos').all();
+
+  if (!entries.length) return res.json({ empty: true });
+
+  const totalEntries   = entries.length;
+  const totalSightings = sightings.length;
+  const totalPhotos    = photos.length;
+
+  // Date range
+  const dated = entries.filter(e => e.date).sort((a,b) => a.date.localeCompare(b.date));
+  const firstEntry = dated[0];
+  const lastEntry  = dated[dated.length - 1];
+  const uniqueDays = new Set(dated.map(e => e.date)).size;
+  const avgSightings = totalEntries ? (totalSightings / totalEntries).toFixed(1) : 0;
+
+  // Best single outing
+  const sightingsByEntry = {};
+  sightings.forEach(s => { sightingsByEntry[s.entry_id] = (sightingsByEntry[s.entry_id]||0) + 1; });
+  const bestEntryId = Object.entries(sightingsByEntry).sort((a,b) => b[1]-a[1])[0];
+  const bestEntryRow = bestEntryId ? entries.find(e => e.id === parseInt(bestEntryId[0])) : null;
+  const bestEntry = bestEntryRow ? { date: bestEntryRow.date, location: bestEntryRow.location, count: parseInt(bestEntryId[1]) } : null;
+
+  // Top locations
+  const locationCount = {};
+  entries.forEach(e => { if (e.location) locationCount[e.location] = (locationCount[e.location]||0) + 1; });
+  const topLocations = Object.entries(locationCount).sort((a,b) => b[1]-a[1]).slice(0,5).map(([name,count]) => ({name,count}));
+
+  // Monthly activity
+  const monthlyActivity = {};
+  dated.forEach(e => { const m = e.date.slice(0,7); monthlyActivity[m] = (monthlyActivity[m]||0) + 1; });
+  const monthlyArr = Object.entries(monthlyActivity).sort().map(([month,count]) => ({month,count}));
+
+  // Top species
+  const nameCount = {};
+  sightings.forEach(s => { if (s.name) nameCount[s.name] = (nameCount[s.name]||0) + 1; });
+  const topSpecies = Object.entries(nameCount).sort((a,b) => b[1]-a[1]).slice(0,10).map(([name,count]) => ({name,count}));
+  const uniqueSpecies = Object.keys(nameCount).length;
+  const rareSightings = Object.values(nameCount).filter(c => c === 1).length;
+
+  // Tag cloud
+  const tagCount = {};
+  sightings.forEach(s => {
+    if (s.tags) s.tags.split(',').forEach(t => { const k = t.trim(); if (k) tagCount[k] = (tagCount[k]||0) + 1; });
+  });
+  const tagCloud = Object.entries(tagCount).sort((a,b) => b[1]-a[1]).slice(0,30).map(([tag,count]) => ({tag,count}));
+
+  // Seasonal breakdown (tuned for South India)
+  const seasons = { Spring:0, Summer:0, Monsoon:0, Autumn:0, Winter:0 };
+  dated.forEach(e => {
+    const m = parseInt(e.date.slice(5,7));
+    if      (m>=3&&m<=5)  seasons.Spring++;
+    else if (m>=6&&m<=7)  seasons.Summer++;
+    else if (m>=8&&m<=9)  seasons.Monsoon++;
+    else if (m>=10&&m<=11)seasons.Autumn++;
+    else                   seasons.Winter++;
+  });
+
+  // Day-of-week pattern
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const dowCount = {Sun:0,Mon:0,Tue:0,Wed:0,Thu:0,Fri:0,Sat:0};
+  dated.forEach(e => { const d = new Date(e.date+'T12:00:00'); dowCount[days[d.getDay()]]++; });
+
+  // Longest consecutive-day streak
+  const daySet = [...new Set(dated.map(e => e.date))].sort();
+  let maxStreak = daySet.length ? 1 : 0, curStreak = 1;
+  for (let i = 1; i < daySet.length; i++) {
+    const diff = (new Date(daySet[i]) - new Date(daySet[i-1])) / 86400000;
+    if (diff === 1) { curStreak++; maxStreak = Math.max(maxStreak, curStreak); } else curStreak = 1;
+  }
+
+  // Recent momentum: last 30 vs prior 30 days
+  const now  = new Date();
+  const d30  = new Date(now - 30*86400000).toISOString().slice(0,10);
+  const d60  = new Date(now - 60*86400000).toISOString().slice(0,10);
+  const last30  = dated.filter(e => e.date >= d30).length;
+  const prior30 = dated.filter(e => e.date >= d60 && e.date < d30).length;
+
+  // Most photographed species
+  const photosBySighting = {};
+  photos.filter(p => p.sighting_id).forEach(p => { photosBySighting[p.sighting_id] = (photosBySighting[p.sighting_id]||0) + 1; });
+  const sightingById = {};
+  sightings.forEach(s => sightingById[s.id] = s);
+  const mostPhotographed = Object.entries(photosBySighting)
+    .sort((a,b) => b[1]-a[1]).slice(0,5)
+    .map(([sid,count]) => ({ name: sightingById[sid]?.name || 'Unknown', count }));
+
+  res.json({
+    empty: false,
+    totalEntries, totalSightings, totalPhotos, uniqueDays,
+    avgSightings: parseFloat(avgSightings),
+    uniqueSpecies, rareSightings,
+    firstEntry: firstEntry ? { date: firstEntry.date, location: firstEntry.location } : null,
+    lastEntry:  lastEntry  ? { date: lastEntry.date,  location: lastEntry.location  } : null,
+    bestEntry, topLocations, monthlyArr, topSpecies, tagCloud,
+    seasons, dowCount, maxStreak, last30, prior30, mostPhotographed,
+  });
+});
+
 // ── Start ─────────────────────────────────────────────────────
 // Pre-seed last sync date if user has already manually imported up to a point
 {
   const existing = db.prepare("SELECT value FROM inat_config WHERE key = 'inat_last_sync'").get();
   if (!existing) {
-    db.prepare("INSERT OR IGNORE INTO inat_config (key, value) VALUES ('inat_last_sync', '2025-04-10T23:59:59.000Z')").run();
+    db.prepare("INSERT OR IGNORE INTO inat_config (key, value) VALUES ('inat_last_sync', '2026-04-25T23:59:59.000Z')").run();
     console.log('ℹ️  iNaturalist: last sync pre-seeded to April 10, 2025. Next sync will only fetch newer observations.');
   }
 }
