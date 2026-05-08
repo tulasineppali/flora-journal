@@ -135,9 +135,6 @@ mark { background: #fef3c7; color: inherit; border-radius: 2px; padding: 0 1px; 
 .page-btn:active { background: var(--rule-light); }
 .page-btn.current { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .page-btn:disabled { opacity: 0.3; cursor: default; }
-.page-ellipsis { letter-spacing: 2px; min-width: 36px; }
-.page-ellipsis:hover { background: var(--amber-bg); border-color: var(--amber); color: var(--amber); }
-.page-jump-input { width: 58px; height: 44px; padding: 0 8px; font-size: 14px; border: 0.5px solid var(--amber); border-radius: 6px; background: var(--paper); color: var(--ink); font-family: 'Karla', sans-serif; text-align: center; outline: none; }
 .page-info { font-size: 13px; color: var(--ink-faint); padding: 0 4px; }
 
 .empty-state { text-align: center; padding: 4rem 1rem; color: var(--ink-faint); }
@@ -249,7 +246,21 @@ textarea { min-height: 80px; line-height: 1.65; }
 .inat-status-strip { background: var(--paper); border: 0.5px solid var(--rule); border-radius: 8px; padding: 12px 14px; margin-bottom: 1rem; }
 .inat-change-user { background: none; border: 0.5px solid var(--rule); border-radius: 4px; padding: 5px 10px; font-family: 'Karla', sans-serif; font-size: 12px; color: var(--ink-faint); cursor: pointer; white-space: nowrap; }
 .inat-change-user:hover { border-color: var(--ink-muted); color: var(--ink-muted); }
-/* ── SUMMARY PAGE ── */
+/* Tag filter bar */
+.tag-filter-bar { max-width: 760px; margin: 0 auto; padding: 0 1.25rem; overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
+.tag-filter-bar.open { max-height: 300px; padding-bottom: 0.5rem; }
+.tag-filter-pills { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 8px; }
+.tag-filter-pill { display: inline-flex; align-items: center; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-family: 'Karla', sans-serif; cursor: pointer; border: 0.5px solid var(--rule); background: var(--paper-card); color: var(--ink-muted); transition: all 0.12s; user-select: none; white-space: nowrap; }
+.tag-filter-pill:hover { border-color: var(--green); color: var(--green); }
+.tag-filter-pill.active { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 600; }
+.tag-filter-pill.active::before { content: '✓ '; font-size: 10px; }
+.filter-tag-btn { display: flex; align-items: center; gap: 5px; background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 6px; font-family: 'Karla', sans-serif; font-size: 14px; color: var(--ink-soft); padding: 9px 12px; cursor: pointer; min-height: 44px; white-space: nowrap; }
+.filter-tag-btn.active { border-color: var(--green); color: var(--green); background: var(--green-bg); }
+.filter-tag-count { background: var(--green); color: white; border-radius: 10px; font-size: 10px; padding: 1px 6px; font-weight: 700; }
+/* Ellipsis pagination */
+.page-ellipsis { letter-spacing: 2px; min-width: 36px; }
+.page-ellipsis:hover { background: var(--amber-bg); border-color: var(--amber); color: var(--amber); }
+/* Summary page */
 #summary-page { display: none; max-width: 760px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
 #summary-page.visible { display: block; }
 .sum-section { margin-bottom: 2.5rem; }
@@ -262,55 +273,34 @@ textarea { min-height: 80px; line-height: 1.65; }
 .sum-stat.accent .sum-stat-val { color: var(--green); }
 .sum-stat.amber { background: var(--amber-bg); border-color: var(--amber); }
 .sum-stat.amber .sum-stat-val { color: var(--amber); }
-
-/* Bar chart */
 .sum-bar-chart { display: flex; flex-direction: column; gap: 8px; }
 .sum-bar-row { display: flex; align-items: center; gap: 10px; }
 .sum-bar-label { font-size: 13px; color: var(--ink-soft); width: 120px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sum-bar-label.wide { width: 160px; }
 .sum-bar-wrap { flex: 1; height: 22px; background: var(--rule-light); border-radius: 4px; overflow: hidden; }
-.sum-bar-fill { height: 100%; border-radius: 4px; background: var(--green); transition: width 0.6s ease; }
+.sum-bar-fill { height: 100%; border-radius: 4px; background: var(--green); }
 .sum-bar-fill.amber { background: var(--amber); }
-.sum-bar-fill.muted { background: var(--ink-faint); opacity: 0.5; }
 .sum-bar-count { font-size: 12px; color: var(--ink-faint); width: 28px; text-align: right; flex-shrink: 0; }
-
-/* Tag cloud */
 .sum-tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
-.sum-tag { padding: 5px 12px; border-radius: 20px; font-family: 'Karla', sans-serif; font-weight: 500; line-height: 1; cursor: default; transition: transform 0.1s; }
-.sum-tag:hover { transform: scale(1.06); }
-
-/* Activity calendar strip */
+.sum-tag { padding: 5px 12px; border-radius: 20px; font-family: 'Karla', sans-serif; font-weight: 500; line-height: 1; cursor: default; }
 .sum-month-chart { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; }
 .sum-month-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.sum-month-bar { width: 28px; border-radius: 3px 3px 0 0; background: var(--green); min-height: 4px; transition: height 0.5s ease; }
+.sum-month-bar { width: 28px; border-radius: 3px 3px 0 0; background: var(--green); min-height: 4px; }
 .sum-month-lbl { font-size: 10px; color: var(--ink-faint); text-align: center; }
-
-/* Season wheel (simple flex) */
 .sum-seasons { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
 .sum-season { background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 10px; padding: 12px 8px; text-align: center; }
 .sum-season-icon { font-size: 22px; margin-bottom: 4px; }
 .sum-season-name { font-size: 11px; color: var(--ink-faint); }
 .sum-season-count { font-family: 'Lora', serif; font-size: 20px; color: var(--ink); }
-
-/* DOW chart */
 .sum-dow { display: flex; gap: 6px; align-items: flex-end; height: 80px; }
 .sum-dow-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
 .sum-dow-bar { width: 100%; border-radius: 3px 3px 0 0; background: var(--amber); }
 .sum-dow-lbl { font-size: 10px; color: var(--ink-faint); }
-
-/* Milestone ribbon */
 .sum-milestone { background: var(--paper-card); border: 0.5px solid var(--rule); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; }
 .sum-milestone-icon { font-size: 28px; flex-shrink: 0; }
 .sum-milestone-text { font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
 .sum-milestone-text strong { color: var(--ink); }
-
-@media (max-width: 540px) {
-  .sum-grid { grid-template-columns: repeat(2, 1fr); }
-  .sum-seasons { grid-template-columns: repeat(3, 1fr); }
-  .sum-bar-label { width: 90px; }
-  .sum-bar-label.wide { width: 110px; }
-}
-@media (min-width: 541px) { .inat-panel-bg { align-items: center; padding: 1rem; } .inat-panel { border-radius: 12px; padding: 0 2rem 1.5rem; } }
+@media (max-width: 540px) { .sum-grid { grid-template-columns: repeat(2,1fr); } .sum-seasons { grid-template-columns: repeat(3,1fr); } .sum-bar-label,.sum-bar-label.wide { width: 100px; } }
 </style>
 </head>
 <body>
@@ -342,8 +332,17 @@ textarea { min-height: 80px; line-height: 1.65; }
 <div class="filter-bar">
   <select class="filter-select" id="filter-place" onchange="applyFilters()"><option value="">All places</option></select>
   <select class="filter-select" id="filter-month" onchange="applyFilters()"><option value="">All dates</option></select>
+  <button class="filter-tag-btn" id="filter-tag-btn" onclick="toggleTagFilter()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+    Tags
+    <span class="filter-tag-count" id="filter-tag-count" style="display:none"></span>
+  </button>
   <button class="filter-clear" id="filter-clear-btn" onclick="clearFilters()" style="display:none">✕ Clear</button>
   <span class="filter-results" id="filter-results"></span>
+</div>
+
+<div class="tag-filter-bar" id="tag-filter-bar">
+  <div class="tag-filter-pills" id="tag-filter-pills"></div>
 </div>
 
 <div style="max-width:760px;margin:0 auto;padding:0 1.25rem;">
@@ -491,7 +490,7 @@ const DRAFT_KEY = 'flora-draft-v2';
 
 let allEntries = [], filtered = [], currentPage = 1;
 let editingId = null, specimenCount = 0;
-let searchQuery = '', draftTimer = null, searchTimer = null;
+let searchQuery = '', draftTimer = null, searchTimer = null, activeTags = new Set();
 let entryFormPhotos = [];
 
 /* ── API ── */
@@ -675,6 +674,119 @@ async function runInatSync() {
   }
 }
 
+/* ── TAG FILTER ── */
+function toggleTagFilter(){
+  const bar=document.getElementById('tag-filter-bar');
+  bar.classList.toggle('open');
+}
+function toggleTagPill(pill, tag){
+  if(activeTags.has(tag)){ activeTags.delete(tag); pill.classList.remove('active'); }
+  else { activeTags.add(tag); pill.classList.add('active'); }
+  fetchAndRender();
+}
+
+/* ── SUMMARY ── */
+let summaryVisible = false;
+function toggleSummary(){
+  summaryVisible = !summaryVisible;
+  const page   = document.getElementById('summary-page');
+  const main   = document.querySelector('main');
+  const filters= document.querySelector('.filter-bar');
+  const tagBar = document.getElementById('tag-filter-bar');
+  const search = document.getElementById('search-bar');
+  const btn    = document.getElementById('summary-toggle');
+  if(summaryVisible){
+    page.classList.add('visible'); main.style.display='none';
+    filters.style.display='none'; if(tagBar) tagBar.style.display='none';
+    search.style.display='none'; btn.classList.add('active');
+    renderSummary();
+  } else {
+    page.classList.remove('visible'); main.style.display='';
+    filters.style.display=''; if(tagBar) tagBar.style.display='';
+    search.style.display=''; btn.classList.remove('active');
+  }
+}
+
+async function renderSummary(){
+  const el=document.getElementById('summary-content');
+  el.innerHTML='<div class="empty-state"><p>Crunching your data…</p></div>';
+  const d=await api('GET','/api/summary');
+  if(d.empty){el.innerHTML='<div class="empty-state"><p>No journal entries yet.</p></div>';return;}
+
+  const fmt=date=>new Date(date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  const fmtM=m=>{const[y,mo]=m.split('-');return new Date(y,mo-1,1).toLocaleDateString('en-GB',{month:'short',year:'2-digit'});};
+  const momentum=d.last30>d.prior30?'↑':d.last30<d.prior30?'↓':'→';
+  const mColor=d.last30>d.prior30?'var(--green)':d.last30<d.prior30?'#d06050':'var(--ink-faint)';
+
+  const maxMonth=Math.max(...d.monthlyArr.map(m=>m.count),1);
+  const monthBars=d.monthlyArr.map(m=>`<div class="sum-month-col"><div class="sum-month-bar" style="height:${Math.max(4,Math.round(m.count/maxMonth*80))}px" title="${fmtM(m.month)}: ${m.count}"></div><div class="sum-month-lbl">${fmtM(m.month)}</div></div>`).join('');
+
+  const maxSp=d.topSpecies[0]?.count||1;
+  const speciesBars=d.topSpecies.map(s=>`<div class="sum-bar-row"><div class="sum-bar-label wide" title="${s.name}">${s.name}</div><div class="sum-bar-wrap"><div class="sum-bar-fill" style="width:${Math.round(s.count/maxSp*100)}%"></div></div><div class="sum-bar-count">${s.count}</div></div>`).join('');
+
+  const maxLoc=d.topLocations[0]?.count||1;
+  const locBars=d.topLocations.map(l=>`<div class="sum-bar-row"><div class="sum-bar-label wide" title="${l.name}">${l.name}</div><div class="sum-bar-wrap"><div class="sum-bar-fill amber" style="width:${Math.round(l.count/maxLoc*100)}%"></div></div><div class="sum-bar-count">${l.count}</div></div>`).join('');
+
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const maxDow=Math.max(...days.map(dy=>d.dowCount[dy]||0),1);
+  const dowBars=days.map(dy=>`<div class="sum-dow-col"><div class="sum-dow-bar" style="height:${Math.max(3,Math.round((d.dowCount[dy]||0)/maxDow*60))}px" title="${dy}: ${d.dowCount[dy]||0}"></div><div class="sum-dow-lbl">${dy}</div></div>`).join('');
+
+  const maxTag=d.tagCloud[0]?.count||1;
+  const greens=['#3a7a32','#5a9a50','#4a6a40','#2a6a28','#6aaa60'];
+  const ambers=['#b87010','#d09030','#c86820','#e0a020'];
+  const tagPills=d.tagCloud.map((t,i)=>{
+    const size=11+Math.round(t.count/maxTag*12);
+    const col=i%3===0?greens[i%greens.length]:ambers[i%ambers.length];
+    return `<span class="sum-tag" style="font-size:${size}px;background:${col}18;color:${col};border:0.5px solid ${col}44">${t.tag} <span style="opacity:0.55;font-size:${size-2}px">${t.count}</span></span>`;
+  }).join('');
+
+  const si={Spring:'🌸',Summer:'☀️',Monsoon:'🌧️',Autumn:'🍂',Winter:'❄️'};
+  const seasonCards=Object.entries(d.seasons).map(([n,c])=>`<div class="sum-season"><div class="sum-season-icon">${si[n]}</div><div class="sum-season-count">${c}</div><div class="sum-season-name">${n}</div></div>`).join('');
+
+  const ms=[];
+  if(d.maxStreak>1) ms.push({i:'🔥',t:`Longest streak: <strong>${d.maxStreak} consecutive days</strong> in the field`});
+  if(d.rareSightings>0) ms.push({i:'🔍',t:`<strong>${d.rareSightings} species</strong> recorded only once — rare encounters`});
+  if(d.bestEntry) ms.push({i:'🏆',t:`Best outing: <strong>${d.bestEntry.count} sightings</strong> on ${fmt(d.bestEntry.date)}${d.bestEntry.location?' at '+d.bestEntry.location:''}`});
+  ms.push({i:'📸',t:`<strong>${d.totalPhotos}</strong> photos across ${d.totalSightings} sightings — ${(d.totalPhotos/Math.max(d.totalSightings,1)).toFixed(1)} per sighting on average`});
+  if(d.last30!==d.prior30) ms.push({i:d.last30>d.prior30?'📈':'📉',t:`Activity last 30 days: <strong>${d.last30} entries</strong> (${d.last30>d.prior30?'+':''}${d.last30-d.prior30} vs prior month)`});
+
+  el.innerHTML=`
+    <div class="sum-section"><div class="sum-section-title">At a glance</div><div class="sum-grid">
+      <div class="sum-stat accent"><div class="sum-stat-val">${d.totalEntries}</div><div class="sum-stat-label">Journal entries</div></div>
+      <div class="sum-stat accent"><div class="sum-stat-val">${d.uniqueSpecies}</div><div class="sum-stat-label">Species recorded</div></div>
+      <div class="sum-stat"><div class="sum-stat-val">${d.totalSightings}</div><div class="sum-stat-label">Total sightings</div></div>
+      <div class="sum-stat"><div class="sum-stat-val">${d.totalPhotos}</div><div class="sum-stat-label">Photos taken</div></div>
+      <div class="sum-stat"><div class="sum-stat-val">${d.uniqueDays}</div><div class="sum-stat-label">Days in the field</div></div>
+      <div class="sum-stat"><div class="sum-stat-val">${d.avgSightings}</div><div class="sum-stat-label">Avg sightings / outing</div></div>
+      <div class="sum-stat amber"><div class="sum-stat-val">${d.last30} <span style="font-size:20px;color:${mColor}">${momentum}</span></div><div class="sum-stat-label">Entries last 30 days</div></div>
+      <div class="sum-stat"><div class="sum-stat-val">${d.maxStreak}</div><div class="sum-stat-label">Longest streak (days)</div></div>
+    </div></div>
+
+    <div class="sum-section"><div class="sum-section-title">Your journey</div><div class="sum-grid" style="grid-template-columns:1fr 1fr">
+      <div class="sum-stat"><div class="sum-stat-val" style="font-size:17px">${d.firstEntry?fmt(d.firstEntry.date):'—'}</div><div class="sum-stat-label">First entry${d.firstEntry?.location?'<br><span style="color:var(--ink-soft)">'+d.firstEntry.location+'</span>':''}</div></div>
+      <div class="sum-stat"><div class="sum-stat-val" style="font-size:17px">${d.lastEntry?fmt(d.lastEntry.date):'—'}</div><div class="sum-stat-label">Latest entry${d.lastEntry?.location?'<br><span style="color:var(--ink-soft)">'+d.lastEntry.location+'</span>':''}</div></div>
+    </div></div>
+
+    ${d.monthlyArr.length>1?`<div class="sum-section"><div class="sum-section-title">Activity over time</div><div class="sum-month-chart">${monthBars}</div></div>`:''}
+
+    <div class="sum-section"><div class="sum-section-title">When you go out</div>
+      <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;">
+        <div><div style="font-size:12px;color:var(--ink-faint);margin-bottom:8px">Day of week</div><div class="sum-dow">${dowBars}</div></div>
+        <div style="flex:1;min-width:200px"><div style="font-size:12px;color:var(--ink-faint);margin-bottom:8px">Season</div><div class="sum-seasons">${seasonCards}</div></div>
+      </div>
+    </div>
+
+    ${d.topSpecies.length?`<div class="sum-section"><div class="sum-section-title">Most observed species</div><div class="sum-bar-chart">${speciesBars}</div></div>`:''}
+    ${d.topLocations.length?`<div class="sum-section"><div class="sum-section-title">Favourite places</div><div class="sum-bar-chart">${locBars}</div></div>`:''}
+    ${d.tagCloud.length?`<div class="sum-section"><div class="sum-section-title">What you've been observing</div><div class="sum-tag-cloud">${tagPills}</div></div>`:''}
+
+    <div class="sum-section"><div class="sum-section-title">Highlights</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${ms.map(m=>`<div class="sum-milestone"><div class="sum-milestone-icon">${m.i}</div><div class="sum-milestone-text">${m.t}</div></div>`).join('')}
+      </div>
+    </div>`;
+}
+
 async function load() { await loadFilters(); await fetchAndRender(); checkDraftBanner(); loadInatConfig(); }
 
 async function loadFilters() {
@@ -686,6 +798,14 @@ async function loadFilters() {
     const [y,mo]=m.split('-');
     return `<option value="${m}"${m===sm?' selected':''}>${new Date(+y,+mo-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</option>`;
   }).join('');
+  // Load tag filter pills
+  try {
+    const tags = await api('GET', '/api/tags');
+    const pillsEl = document.getElementById('tag-filter-pills');
+    if (pillsEl) pillsEl.innerHTML = tags.map(t =>
+      `<button class="tag-filter-pill${activeTags.has(t)?' active':''}" onclick="toggleTagPill(this,'${esc(t)}')">${esc(t)}</button>`
+    ).join('') || '<span style="font-size:12px;color:var(--ink-faint)">No tags yet</span>';
+  } catch(_) {}
 }
 
 async function fetchAndRender(restoreScroll) {
@@ -698,13 +818,30 @@ async function fetchAndRender(restoreScroll) {
   const savedScroll = restoreScroll ? window.scrollY : 0;
   const savedPage   = restoreScroll ? currentPage : 1;
   allEntries = await api('GET', '/api/entries'+(params.toString()?'?'+params:''));
-  filtered = allEntries;
+  // Client-side tag filter
+  if (activeTags.size > 0) {
+    filtered = allEntries.filter(e =>
+      (e.specimens||[]).some(s => {
+        const st = s.tags ? (Array.isArray(s.tags) ? s.tags : s.tags.split(',').map(t=>t.trim())) : [];
+        return [...activeTags].every(at => st.includes(at));
+      })
+    );
+  } else {
+    filtered = allEntries;
+  }
   document.getElementById('entry-count').textContent = allEntries.length+(allEntries.length===1?' entry':' entries');
-  const any=place||month||searchQuery;
+  const any = place||month||searchQuery||activeTags.size>0;
   document.getElementById('filter-results').textContent = any?`${filtered.length} result${filtered.length!==1?'s':''}` : '';
   document.getElementById('filter-clear-btn').style.display = any?'':'none';
   document.getElementById('filter-place').classList.toggle('active',!!place);
   document.getElementById('filter-month').classList.toggle('active',!!month);
+  // Tag button badge
+  const tagBtn = document.getElementById('filter-tag-btn');
+  const tagCountEl = document.getElementById('filter-tag-count');
+  if (tagBtn) {
+    tagBtn.classList.toggle('active', activeTags.size>0);
+    if (tagCountEl) { tagCountEl.textContent=activeTags.size; tagCountEl.style.display=activeTags.size>0?'':'none'; }
+  }
   if(restoreScroll){ currentPage=savedPage; renderPage(); requestAnimationFrame(()=>window.scrollTo({top:savedScroll,behavior:'instant'})); }
   else { currentPage=1; renderPage(); }
 }
@@ -718,7 +855,15 @@ function toggleSearch(){
   if(open) setTimeout(()=>document.getElementById('search-input').focus(),260); else clearSearch();
 }
 function applyFilters(){ fetchAndRender(); }
-function clearFilters(){ document.getElementById('filter-place').value=''; document.getElementById('filter-month').value=''; fetchAndRender(); }
+function clearFilters(){
+  document.getElementById('filter-place').value='';
+  document.getElementById('filter-month').value='';
+  activeTags.clear();
+  document.querySelectorAll('.tag-filter-pill').forEach(p=>p.classList.remove('active'));
+  const bar=document.getElementById('tag-filter-bar');
+  if(bar) bar.classList.remove('open');
+  fetchAndRender();
+}
 
 /* ── RENDER ── */
 function renderPage() {
@@ -914,7 +1059,7 @@ async function handleInlineUpload(entryId, sightingId, files, removeSheet) {
       return {...s, photos:[...(s.photos||[]),...urls.map(u=>({url:u,caption:null}))]};
     });
     await api('PUT','/api/entries/'+entryId,entry);
-    await fetchAndRender(true); toast('Photo added');
+    await fetchAndRender(); toast('Photo added');
   } catch(err){ toast('Upload failed'); }
 }
 
@@ -956,21 +1101,13 @@ function renderPagination(total){
   const pg=document.getElementById('pagination');
   if(total<=1){pg.innerHTML='';return;}
   const start=(currentPage-1)*PER_PAGE+1, end=Math.min(currentPage*PER_PAGE,filtered.length);
-
-  // Always show: 1,2, currentPage-1,currentPage,currentPage+1, total-1,total
   const show=new Set([1,2,currentPage-1,currentPage,currentPage+1,total-1,total].filter(p=>p>=1&&p<=total));
   const pages=[...show].sort((a,b)=>a-b);
-
   let h=`<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>←</button>`;
   let prev=0;
   for(const p of pages){
-    if(p-prev===2){
-      // Only one page skipped — just show it
-      h+=`<button class="page-btn" onclick="goPage(${p-1})">${p-1}</button>`;
-    } else if(p-prev>2){
-      // Gap — clickable ellipsis opens jump input
-      h+=`<button class="page-btn page-ellipsis" onclick="openPageJump(this,${prev+1},${p-1})" title="Click to jump…">…</button>`;
-    }
+    if(p-prev===2) h+=`<button class="page-btn" onclick="goPage(${p-1})">${p-1}</button>`;
+    else if(p-prev>2) h+=`<button class="page-btn page-ellipsis" onclick="openPageJump(this,${prev+1},${p-1})" title="Click to jump…">…</button>`;
     h+=`<button class="page-btn${p===currentPage?' current':''}" onclick="goPage(${p})">${p}</button>`;
     prev=p;
   }
@@ -978,21 +1115,18 @@ function renderPagination(total){
   h+=`<span class="page-info">${start}–${end} of ${filtered.length}</span>`;
   pg.innerHTML=h;
 }
-
-function openPageJump(btn, min, max){
+function openPageJump(btn,min,max){
   const inp=document.createElement('input');
   inp.type='number'; inp.min=min; inp.max=max;
-  inp.className='page-jump-input';
   inp.placeholder=`${min}–${max}`;
+  inp.style.cssText='width:58px;height:44px;padding:0 8px;font-size:14px;border:0.5px solid var(--amber);border-radius:6px;background:var(--paper);color:var(--ink);font-family:Karla,sans-serif;text-align:center;outline:none;';
   inp.onkeydown=e=>{
     if(e.key==='Enter'){ const v=parseInt(inp.value); if(v>=min&&v<=max) goPage(v); else inp.select(); }
     if(e.key==='Escape') renderPagination(Math.ceil(filtered.length/PER_PAGE));
   };
   inp.onblur=()=>setTimeout(()=>renderPagination(Math.ceil(filtered.length/PER_PAGE)),200);
-  btn.replaceWith(inp);
-  inp.focus();
+  btn.replaceWith(inp); inp.focus();
 }
-
 function goPage(p){
   const total=Math.ceil(filtered.length/PER_PAGE);
   if(p<1||p>total) return;
@@ -1282,162 +1416,6 @@ async function autoSaveEdit(){
 /* ── TOAST ── */
 let toastTimer;
 function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2500); }
-
-/* ── SUMMARY ── */
-let summaryVisible = false;
-
-function toggleSummary() {
-  summaryVisible = !summaryVisible;
-  const page    = document.getElementById('summary-page');
-  const main    = document.querySelector('main');
-  const filters = document.querySelector('.filter-bar');
-  const search  = document.getElementById('search-bar');
-  const btn     = document.getElementById('summary-toggle');
-  if (summaryVisible) {
-    page.classList.add('visible');
-    main.style.display = 'none';
-    filters.style.display = 'none';
-    search.style.display = 'none';
-    btn.style.color = 'var(--green)';
-    renderSummary();
-  } else {
-    page.classList.remove('visible');
-    main.style.display = '';
-    filters.style.display = '';
-    search.style.display = '';
-    btn.style.color = '';
-  }
-}
-
-async function renderSummary() {
-  const el = document.getElementById('summary-content');
-  el.innerHTML = '<div class="empty-state"><p>Crunching your data…</p></div>';
-  const d = await api('GET', '/api/summary');
-  if (d.empty) { el.innerHTML = '<div class="empty-state"><p>No journal entries yet.</p></div>'; return; }
-
-  const fmt = date => new Date(date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-  const fmtMonth = m => { const [y,mo]=m.split('-'); return new Date(y,mo-1,1).toLocaleDateString('en-GB',{month:'short',year:'2-digit'}); };
-
-  const momentum = d.last30>d.prior30?'↑':d.last30<d.prior30?'↓':'→';
-  const momentumColor = d.last30>d.prior30?'var(--green)':d.last30<d.prior30?'#d06050':'var(--ink-faint)';
-
-  const maxMonth = Math.max(...d.monthlyArr.map(m=>m.count),1);
-  const monthBars = d.monthlyArr.map(m=>`
-    <div class="sum-month-col">
-      <div class="sum-month-bar" style="height:${Math.max(4,Math.round((m.count/maxMonth)*80))}px" title="${fmtMonth(m.month)}: ${m.count}"></div>
-      <div class="sum-month-lbl">${fmtMonth(m.month)}</div>
-    </div>`).join('');
-
-  const maxSp = d.topSpecies[0]?.count||1;
-  const speciesBars = d.topSpecies.map(s=>`
-    <div class="sum-bar-row">
-      <div class="sum-bar-label wide" title="${s.name}">${s.name}</div>
-      <div class="sum-bar-wrap"><div class="sum-bar-fill" style="width:${Math.round(s.count/maxSp*100)}%"></div></div>
-      <div class="sum-bar-count">${s.count}</div>
-    </div>`).join('');
-
-  const maxLoc = d.topLocations[0]?.count||1;
-  const locationBars = d.topLocations.map(l=>`
-    <div class="sum-bar-row">
-      <div class="sum-bar-label wide" title="${l.name}">${l.name}</div>
-      <div class="sum-bar-wrap"><div class="sum-bar-fill amber" style="width:${Math.round(l.count/maxLoc*100)}%"></div></div>
-      <div class="sum-bar-count">${l.count}</div>
-    </div>`).join('');
-
-  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const maxDow=Math.max(...days.map(d2=>d.dowCount[d2]||0),1);
-  const dowBars=days.map(day=>`
-    <div class="sum-dow-col">
-      <div class="sum-dow-bar" style="height:${Math.max(3,Math.round((d.dowCount[day]||0)/maxDow*60))}px" title="${day}: ${d.dowCount[day]||0}"></div>
-      <div class="sum-dow-lbl">${day}</div>
-    </div>`).join('');
-
-  const maxTag=d.tagCloud[0]?.count||1;
-  const greens=['#3a7a32','#5a9a50','#4a6a40','#2a6a28','#6aaa60'];
-  const ambers=['#b87010','#d09030','#c86820','#e0a020'];
-  const tagPills=d.tagCloud.map((t,i)=>{
-    const size=11+Math.round((t.count/maxTag)*12);
-    const col=(i%3===0)?greens[i%greens.length]:ambers[i%ambers.length];
-    return `<span class="sum-tag" style="font-size:${size}px;background:${col}18;color:${col};border:0.5px solid ${col}44">${t.tag} <span style="opacity:0.55;font-size:${size-2}px">${t.count}</span></span>`;
-  }).join('');
-
-  const seasonIcons={Spring:'🌸',Summer:'☀️',Monsoon:'🌧️',Autumn:'🍂',Winter:'❄️'};
-  const seasonCards=Object.entries(d.seasons).map(([name,count])=>`
-    <div class="sum-season">
-      <div class="sum-season-icon">${seasonIcons[name]}</div>
-      <div class="sum-season-count">${count}</div>
-      <div class="sum-season-name">${name}</div>
-    </div>`).join('');
-
-  const milestones=[];
-  if(d.maxStreak>1) milestones.push({icon:'🔥',text:`Longest streak: <strong>${d.maxStreak} consecutive days</strong> in the field`});
-  if(d.rareSightings>0) milestones.push({icon:'🔍',text:`<strong>${d.rareSightings} species</strong> seen only once — rare encounters`});
-  if(d.bestEntry) milestones.push({icon:'🏆',text:`Best outing: <strong>${d.bestEntry.count} sightings</strong> on ${fmt(d.bestEntry.date)}${d.bestEntry.location?' at '+d.bestEntry.location:''}`});
-  milestones.push({icon:'📸',text:`<strong>${d.totalPhotos}</strong> photos across ${d.totalSightings} sightings — ${(d.totalPhotos/Math.max(d.totalSightings,1)).toFixed(1)} per sighting on average`});
-  if(d.last30!==d.prior30) milestones.push({icon:d.last30>d.prior30?'📈':'📉',text:`Activity last 30 days: <strong>${d.last30} entries</strong> (${d.last30>d.prior30?'+':''}${d.last30-d.prior30} vs prior month)`});
-
-  el.innerHTML=`
-    <div class="sum-section">
-      <div class="sum-section-title">At a glance</div>
-      <div class="sum-grid">
-        <div class="sum-stat accent"><div class="sum-stat-val">${d.totalEntries}</div><div class="sum-stat-label">Journal entries</div></div>
-        <div class="sum-stat accent"><div class="sum-stat-val">${d.uniqueSpecies}</div><div class="sum-stat-label">Species recorded</div></div>
-        <div class="sum-stat"><div class="sum-stat-val">${d.totalSightings}</div><div class="sum-stat-label">Total sightings</div></div>
-        <div class="sum-stat"><div class="sum-stat-val">${d.totalPhotos}</div><div class="sum-stat-label">Photos taken</div></div>
-        <div class="sum-stat"><div class="sum-stat-val">${d.uniqueDays}</div><div class="sum-stat-label">Days in the field</div></div>
-        <div class="sum-stat"><div class="sum-stat-val">${d.avgSightings}</div><div class="sum-stat-label">Avg sightings per outing</div></div>
-        <div class="sum-stat amber"><div class="sum-stat-val">${d.last30} <span style="font-size:20px;color:${momentumColor}">${momentum}</span></div><div class="sum-stat-label">Entries last 30 days</div></div>
-        <div class="sum-stat"><div class="sum-stat-val">${d.maxStreak}</div><div class="sum-stat-label">Longest streak (days)</div></div>
-      </div>
-    </div>
-
-    <div class="sum-section">
-      <div class="sum-section-title">Your journey</div>
-      <div class="sum-grid" style="grid-template-columns:1fr 1fr">
-        <div class="sum-stat"><div class="sum-stat-val" style="font-size:17px">${d.firstEntry?fmt(d.firstEntry.date):'—'}</div><div class="sum-stat-label">First entry${d.firstEntry?.location?'<br><span style="color:var(--ink-soft)">'+d.firstEntry.location+'</span>':''}</div></div>
-        <div class="sum-stat"><div class="sum-stat-val" style="font-size:17px">${d.lastEntry?fmt(d.lastEntry.date):'—'}</div><div class="sum-stat-label">Latest entry${d.lastEntry?.location?'<br><span style="color:var(--ink-soft)">'+d.lastEntry.location+'</span>':''}</div></div>
-      </div>
-    </div>
-
-    ${d.monthlyArr.length>1?`
-    <div class="sum-section">
-      <div class="sum-section-title">Activity over time</div>
-      <div class="sum-month-chart">${monthBars}</div>
-    </div>`:''}
-
-    <div class="sum-section">
-      <div class="sum-section-title">When you go out</div>
-      <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;">
-        <div><div style="font-size:12px;color:var(--ink-faint);margin-bottom:8px">Day of week</div><div class="sum-dow">${dowBars}</div></div>
-        <div style="flex:1;min-width:200px"><div style="font-size:12px;color:var(--ink-faint);margin-bottom:8px">Season</div><div class="sum-seasons">${seasonCards}</div></div>
-      </div>
-    </div>
-
-    ${d.topSpecies.length?`
-    <div class="sum-section">
-      <div class="sum-section-title">Most observed species</div>
-      <div class="sum-bar-chart">${speciesBars}</div>
-    </div>`:''}
-
-    ${d.topLocations.length?`
-    <div class="sum-section">
-      <div class="sum-section-title">Favourite places</div>
-      <div class="sum-bar-chart">${locationBars}</div>
-    </div>`:''}
-
-    ${d.tagCloud.length?`
-    <div class="sum-section">
-      <div class="sum-section-title">What you've been observing</div>
-      <div class="sum-tag-cloud">${tagPills}</div>
-    </div>`:''}
-
-    <div class="sum-section">
-      <div class="sum-section-title">Highlights</div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        ${milestones.map(m=>`<div class="sum-milestone"><div class="sum-milestone-icon">${m.icon}</div><div class="sum-milestone-text">${m.text}</div></div>`).join('')}
-      </div>
-    </div>`;
-}
 
 load();
 </script>
